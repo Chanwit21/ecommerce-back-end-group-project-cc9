@@ -1,24 +1,17 @@
-const { User } = require('../models');
+const { User, Cart } = require('../models');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { cloundinaryUploadPromise } = require('../util/upload');
 
 exports.register = async (req, res, next) => {
-  const { firstName, lastName, email, password, facebookId, googleId } =
-    req.body;
+  const { firstName, lastName, email, password, facebookId, googleId } = req.body;
   let { imageUrl } = req.body;
 
   if ([firstName, lastName, email].includes(undefined)) {
-    return res
-      .status(400)
-      .json({ message: 'firstName, lastName, email is require!!' });
+    return res.status(400).json({ message: 'firstName, lastName, email is require!!' });
   }
 
-  if (
-    password === undefined &&
-    facebookId === undefined &&
-    googleId === undefined
-  ) {
+  if (password === undefined && facebookId === undefined && googleId === undefined) {
     return res.status(400).json({
       message: 'password or facebookId or googleId is require!!',
     });
@@ -39,7 +32,7 @@ exports.register = async (req, res, next) => {
         res.status(400).json({ message: 'Email Already in Use.' });
       } else {
         const hashedPassword = await bcrypt.hash(password, 12);
-        await User.create({
+        const user = await User.create({
           firstName,
           lastName,
           email,
@@ -48,6 +41,8 @@ exports.register = async (req, res, next) => {
           facebookId: null,
           googleId: null,
         });
+        // Create Cart when user registed
+        await Cart.create({ userId: user.id });
         res.status(201).json({ message: 'User has been created' });
       }
     } else if (facebookId) {
@@ -57,7 +52,7 @@ exports.register = async (req, res, next) => {
       if (user) {
         res.status(400).json({ message: 'Email Already in Use.' });
       } else {
-        await User.create({
+        const user = await User.create({
           firstName,
           lastName,
           email,
@@ -66,6 +61,8 @@ exports.register = async (req, res, next) => {
           facebookId: facebookId,
           googleId: null,
         });
+        // Create Cart when user registed
+        await Cart.create({ userId: user.id });
         res.status(201).json({ message: 'User has been created' });
       }
     } else if (googleId) {
@@ -75,7 +72,7 @@ exports.register = async (req, res, next) => {
       if (user) {
         res.status(400).json({ message: 'Email Already in Use.' });
       } else {
-        await User.create({
+        const user = await User.create({
           firstName,
           lastName,
           email,
@@ -84,6 +81,8 @@ exports.register = async (req, res, next) => {
           facebookId: null,
           googleId: googleId,
         });
+        // Create Cart when user registed
+        await Cart.create({ userId: user.id });
         res.status(201).json({ message: 'User has been created' });
       }
     } else {
