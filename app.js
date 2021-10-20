@@ -14,6 +14,7 @@ app.use(express.json());
 app.use(passport.initialize());
 
 app.use('/users', userRoute);
+app.use('/cart', userRoute);
 
 app.use((req, res, next) => {
   res.status(404).json({ message: 'resource not found!!' });
