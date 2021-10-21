@@ -103,7 +103,7 @@ CREATE TABLE `carts` (
 
 LOCK TABLES `carts` WRITE;
 /*!40000 ALTER TABLE `carts` DISABLE KEYS */;
-INSERT INTO `carts` VALUES ('626b7f74-20aa-441a-9d7a-6fe5ee26b33d','2021-10-21 05:14:34','2021-10-21 05:14:34','dc44d85f-2083-411c-b8cb-a6bca78ef59f'),('d450a1f0-0210-4fc1-aa21-a136adfd2a43','2021-10-21 05:15:04','2021-10-21 05:15:04','c9d9d87d-a7b3-42ca-9b78-71ce3b6d7d9d');
+INSERT INTO `carts` VALUES ('626b7f74-20aa-441a-9d7a-6fe5ee26b33d','2021-10-21 05:14:34','2021-10-21 05:14:34','dc44d85f-2083-411c-b8cb-a6bca78ef59f'),('d450a1f0-0210-4fc1-aa21-a136adfd2a43','2021-10-21 05:15:04','2021-10-21 05:15:04','c9d9d87d-a7b3-42ca-9b78-71ce3b6d7d9d'),('fed8e65f-4280-4ff8-864a-f397a8e92fe3','2021-10-21 12:35:40','2021-10-21 12:35:40','2a4183ce-2f70-4bad-a988-60a84bbe0e47');
 /*!40000 ALTER TABLE `carts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -318,7 +318,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES ('c9d9d87d-a7b3-42ca-9b78-71ce3b6d7d9d','bom.suthi@gmail.com',NULL,'CUSTOMER','Bom Chanwit','Pansila',NULL,NULL,'https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=4392053434219135&height=50&width=50&ext=1637385307&hash=AeR9MUjHDX1zmVrPSZE','4392053434219135',NULL,'2021-10-21 05:15:04','2021-10-21 05:15:04'),('dc44d85f-2083-411c-b8cb-a6bca78ef59f','bom.suthi@gmail.com',NULL,'CUSTOMER','Chanwit','PANSILA',NULL,NULL,'https://lh3.googleusercontent.com/a/AATXAJxDMbuScPE4Mkn4a-sqoKZCgCjqVQoCxLiOM5EZ=s96-c',NULL,'115802283591494779945','2021-10-21 05:14:34','2021-10-21 05:14:34');
+INSERT INTO `users` VALUES ('2a4183ce-2f70-4bad-a988-60a84bbe0e47','Admin.first@gmail.com','$2a$12$WXNjKSBKVRDfOk6znZ8IvulCcC0a4uTQGb41ePz4xcEYnA9.f5jp.','CUSTOMER','Admin','First',NULL,NULL,NULL,NULL,NULL,'2021-10-21 12:35:40','2021-10-21 12:35:40'),('c9d9d87d-a7b3-42ca-9b78-71ce3b6d7d9d','bom.suthi@gmail.com',NULL,'CUSTOMER','Bom Chanwit','Pansila',NULL,NULL,'https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=4392053434219135&height=50&width=50&ext=1637385307&hash=AeR9MUjHDX1zmVrPSZE','4392053434219135',NULL,'2021-10-21 05:15:04','2021-10-21 05:15:04'),('dc44d85f-2083-411c-b8cb-a6bca78ef59f','bom.suthi@gmail.com',NULL,'CUSTOMER','Chanwit','PANSILA',NULL,NULL,'https://lh3.googleusercontent.com/a/AATXAJxDMbuScPE4Mkn4a-sqoKZCgCjqVQoCxLiOM5EZ=s96-c',NULL,'115802283591494779945','2021-10-21 05:14:34','2021-10-21 05:14:34');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -331,4 +331,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-10-21 12:25:53
+-- Dump completed on 2021-10-21 20:43:44
