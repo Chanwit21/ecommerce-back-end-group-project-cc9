@@ -6,7 +6,8 @@ const cors = require('cors');
 const passport = require('passport');
 const userRoute = require('./routes/user');
 const { errorMiddleWare } = require('./middleware/error');
-// const { sequelize } = require('./models');
+const { sequelize } = require('./models');
+const productRouter = require('./routes/productRouter');
 // sequelize.sync({ force: true });
 
 app.use(cors());
@@ -14,6 +15,7 @@ app.use(express.json());
 app.use(passport.initialize());
 
 app.use('/users', userRoute);
+app.use('/product', productRouter);
 app.use('/cart', userRoute);
 
 app.use((req, res, next) => {
