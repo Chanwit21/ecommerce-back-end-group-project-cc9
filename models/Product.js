@@ -26,6 +26,26 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNUll: false,
       },
+      colorName: {
+        type: DataTypes.STRING,
+        allowNUll: false,
+      },
+      color: {
+        type: DataTypes.STRING,
+        allowNUll: false,
+      },
+      count_stock: {
+        type: DataTypes.STRING,
+        allowNUll: false,
+      },
+      ingredient: {
+        type: DataTypes.STRING,
+        allowNUll: false,
+      },
+      productInfo: {
+        type: DataTypes.STRING,
+        allowNUll: false,
+      },
     },
     { tableName: "products", underscored: true }
   );
