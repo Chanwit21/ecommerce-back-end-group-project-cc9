@@ -44,20 +44,7 @@ exports.register = async (req, res, next) => {
       // Create Cart when user registed
       await Cart.create({ userId: user.id });
 
-      //Create token whenregistered auto login
-      const payload = {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
-        image: user.imageUrl,
-      };
-      const token = jwt.sign(payload, process.env.SECRET_KEY, {
-        expiresIn: process.env.TOKEN_EXPIRE,
-      });
-
-      res.status(201).json({ message: 'User has been created', token });
+      res.status(201).json({ message: 'User has been created' });
     }
   } catch (err) {
     next(err);

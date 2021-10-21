@@ -1,8 +1,8 @@
 {
   "development": {
-    "username": "cc9",
-    "password": "root-bomb-cc9",
-    "database": "group_project_cc9",
+    "username": "root",
+    "password": "1234",
+    "database": "makemegrow",
     "host": "127.0.0.1",
     "dialect": "mysql"
   },
