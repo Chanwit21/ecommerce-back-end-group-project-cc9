@@ -66,7 +66,7 @@ exports.login = async (req, res, next) => {
     }
 
     const user = await User.findOne({
-      where: { email: email, facebookId: null, facebookId: null },
+      where: { email: email, facebookId: null, googleId: null },
     });
 
     if (user) {
