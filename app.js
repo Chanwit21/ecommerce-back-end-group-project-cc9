@@ -8,6 +8,7 @@ const userRoute = require('./routes/user');
 const { errorMiddleWare } = require('./middleware/error');
 const { sequelize } = require('./models');
 const productRouter = require('./routes/productRouter');
+const transactionRouter = require('./routes/transactionRouter');
 // sequelize.sync({ force: true });
 
 app.use(cors());
@@ -17,6 +18,7 @@ app.use(passport.initialize());
 app.use('/users', userRoute);
 app.use('/product', productRouter);
 app.use('/cart', userRoute);
+app.use('/transaction', transactionRouter);
 
 app.use((req, res, next) => {
   res.status(404).json({ message: 'resource not found!!' });
