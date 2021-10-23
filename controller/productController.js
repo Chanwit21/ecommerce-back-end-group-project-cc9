@@ -38,11 +38,13 @@ exports.checkFavorite = async (req, res, next) => {
       },
     });
     const productId = [];
-    product.forEach((item) => productId.push({ id: item.id }));
+    product.forEach((item) => productId.push(+item.id));
     const favortie = await FavoriteProduct.findAll({
       where: {
         userId: req.user.id,
-        [Op.or]: [...productId],
+        productId: {
+          [Op.or]: [...productId]
+        },
       },
     });
 
@@ -57,10 +59,11 @@ exports.checkFavorite = async (req, res, next) => {
 };
 exports.createFavorite = async (req, res, next) => {
   try {
-    const { productId } = req.body;
+    const { productId, productName } = req.body;
     const data = await FavoriteProduct.create({
       productId,
       userId: req.user.id,
+      name: productName
     });
     res.status(201).json({ data });
   } catch (err) {
