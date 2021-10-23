@@ -1,8 +1,8 @@
-const { Sequelize } = require("sequelize");
+const { Sequelize } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
   const Cart = sequelize.define(
-    "Cart",
+    'Cart',
     {
       id: {
         type: DataTypes.UUID,
@@ -11,25 +11,25 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: Sequelize.UUIDV4,
       },
     },
-    { tableName: "carts", underscored: true }
+    { tableName: 'carts', underscored: true }
   );
 
   Cart.associate = (models) => {
     Cart.belongsTo(models.User, {
       foreignKey: {
-        name: "userId",
+        name: 'userId',
         allowNull: false,
       },
-      onDelete: "RESTRICT",
-      onUpdate: "RESTRICT",
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT',
     });
     Cart.hasMany(models.CartItem, {
       foreignKey: {
-        name: "cartId",
+        name: 'cartId',
         allowNull: false,
       },
-      onDelete: "RESTRICT",
-      onUpdate: "RESTRICT",
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT',
     });
   };
 
