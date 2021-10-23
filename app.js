@@ -9,7 +9,7 @@ const userRoute = require('./routes/user');
 const productRouter = require('./routes/productRouter');
 const cartRoute = require('./routes/cart');
 // const { sequelize } = require('./models');
-// sequelize.sync({ force: true });
+// sequelize.sync({ force: false });
 
 app.use(cors());
 app.use(express.json());
