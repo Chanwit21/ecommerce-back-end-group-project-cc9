@@ -1,8 +1,8 @@
-const { Sequelize } = require("sequelize");
+const { Sequelize } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
   const OrderItem = sequelize.define(
-    "OrderItem",
+    'OrderItem',
     {
       id: {
         type: DataTypes.UUID,
@@ -15,25 +15,25 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
     },
-    { tableName: "order_items", underscored: true }
+    { tableName: 'order_items', underscored: true }
   );
 
   OrderItem.associate = (models) => {
     OrderItem.belongsTo(models.Order, {
       foreignKey: {
-        name: "orderId",
+        name: 'orderId',
         allowNull: false,
       },
-      onDelete: "RESTRICT",
-      onUpdate: "RESTRICT",
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT',
     });
     OrderItem.belongsTo(models.Product, {
       foreignKey: {
-        name: "productId",
+        name: 'productId',
         allowNull: false,
       },
-      onDelete: "RESTRICT",
-      onUpdate: "RESTRICT",
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT',
     });
   };
 
