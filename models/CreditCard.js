@@ -1,8 +1,8 @@
-const { Sequelize } = require("sequelize");
+const { Sequelize } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
   const CreditCard = sequelize.define(
-    "CreditCard",
+    'CreditCard',
     {
       id: {
         type: DataTypes.UUID,
@@ -15,17 +15,17 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
     },
-    { tableName: "credit_cards", underscored: true }
+    { tableName: 'credit_cards', underscored: true }
   );
 
   CreditCard.associate = (models) => {
     CreditCard.belongsTo(models.User, {
       foreignKey: {
-        name: "userId",
+        name: 'userId',
         allowNull: false,
       },
-      onDelete: "RESTRICT",
-      onUpdate: "RESTRICT",
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT',
     });
   };
 

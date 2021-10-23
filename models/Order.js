@@ -1,8 +1,8 @@
-const { Sequelize } = require("sequelize");
+const { Sequelize } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
   const Order = sequelize.define(
-    "Order",
+    'Order',
     {
       id: {
         type: DataTypes.UUID,
@@ -17,34 +17,34 @@ module.exports = (sequelize, DataTypes) => {
       cardId: {
         type: DataTypes.STRING,
       },
-      sourceId: {
-        type: DataTypes.STRING,
-      },
+      sourceId: DataTypes.STRING,
       chargeId: DataTypes.STRING,
       amount: DataTypes.DECIMAL(8, 2),
       status: DataTypes.STRING,
       paidAt: DataTypes.DATE,
       expiresAt: DataTypes.DATE,
+      shippingStatus: DataTypes.ENUM('successful', 'pendding', 'failed'),
+      shippingTrackingId: DataTypes.STRING,
     },
-    { tableName: "orders", underscored: true }
+    { tableName: 'orders', underscored: true }
   );
 
   Order.associate = (models) => {
     Order.belongsTo(models.Address, {
       foreignKey: {
-        name: "addressId",
+        name: 'addressId',
         allowNull: false,
       },
-      onDelete: "RESTRICT",
-      onUpdate: "RESTRICT",
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT',
     });
     Order.hasMany(models.OrderItem, {
       foreignKey: {
-        name: "orderId",
+        name: 'orderId',
         allowNull: false,
       },
-      onDelete: "RESTRICT",
-      onUpdate: "RESTRICT",
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT',
     });
   };
 

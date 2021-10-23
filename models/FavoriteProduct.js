@@ -1,8 +1,8 @@
-const { Sequelize } = require("sequelize");
+const { Sequelize } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
   const FavoriteProduct = sequelize.define(
-    "FavoriteProduct",
+    'FavoriteProduct',
     {
       id: {
         type: DataTypes.UUID,
@@ -10,26 +10,30 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: Sequelize.UUIDV4,
       },
+      name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
     },
-    { tableName: "favorite_products", underscored: true }
+    { tableName: 'favorite_products', underscored: true }
   );
 
   FavoriteProduct.associate = (models) => {
     FavoriteProduct.belongsTo(models.Product, {
       foreignKey: {
-        name: "productId",
+        name: 'productId',
         allowNull: false,
       },
-      onDelete: "RESTRICT",
-      onUpdate: "RESTRICT",
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT',
     });
     FavoriteProduct.belongsTo(models.User, {
       foreignKey: {
-        name: "userId",
+        name: 'userId',
         allowNull: false,
       },
-      onDelete: "RESTRICT",
-      onUpdate: "RESTRICT",
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT',
     });
   };
 

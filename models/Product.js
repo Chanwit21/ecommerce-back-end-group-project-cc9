@@ -1,8 +1,8 @@
-const { Sequelize } = require("sequelize");
+const { Sequelize } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
   const Product = sequelize.define(
-    "Product",
+    'Product',
     {
       id: {
         type: DataTypes.UUID,
@@ -34,7 +34,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNUll: false,
       },
-      count_stock: {
+      countStock: {
         type: DataTypes.STRING,
         allowNUll: false,
       },
@@ -42,46 +42,42 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNUll: false,
       },
-      productInfo: {
-        type: DataTypes.STRING,
-        allowNUll: false,
-      },
     },
-    { tableName: "products", underscored: true }
+    { tableName: 'products', underscored: true }
   );
 
   Product.associate = (models) => {
     Product.hasMany(models.OrderItem, {
       foreignKey: {
-        name: "productId",
+        name: 'productId',
         allowNull: false,
       },
-      onDelete: "RESTRICT",
-      onUpdate: "RESTRICT",
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT',
     });
     Product.hasMany(models.CartItem, {
       foreignKey: {
-        name: "productId",
+        name: 'productId',
         allowNull: false,
       },
-      onDelete: "RESTRICT",
-      onUpdate: "RESTRICT",
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT',
     });
     Product.hasMany(models.FavoriteProduct, {
       foreignKey: {
-        name: "productId",
+        name: 'productId',
         allowNull: false,
       },
-      onDelete: "RESTRICT",
-      onUpdate: "RESTRICT",
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT',
     });
     Product.hasMany(models.ProductImage, {
       foreignKey: {
-        name: "productId",
+        name: 'productId',
         allowNull: false,
       },
-      onDelete: "RESTRICT",
-      onUpdate: "RESTRICT",
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT',
     });
   };
 
