@@ -4,21 +4,17 @@ const { Product, FavoriteProduct, ProductImage, CartItem, Cart } = require("../m
 // get all data
 exports.getProductById = async (req, res, next) => {
   try {
-    const { id } = req.params
-    const findName = await Product.findOne({
-      where: {
-        id
-      }
-    })
+    const { productName } = req.params
     const product = await Product.findAll({
       where: {
-        name: findName.name
+        name: productName
       }
     })
 
     const productImage = await ProductImage.findAll({
       where: {
-        '$Product.name$': findName.name
+        '$Product.name$': productName
+
       },
       include: {
         model: Product,
