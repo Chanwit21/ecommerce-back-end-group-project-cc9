@@ -23,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
       status: DataTypes.STRING,
       paidAt: DataTypes.DATE,
       expiresAt: DataTypes.DATE,
-      shippingStatus: DataTypes.ENUM('successful', 'pendding', 'failed'),
+      shippingStatus: DataTypes.ENUM('To Ship', 'Delivery'),
       shippingTrackingId: DataTypes.STRING,
     },
     { tableName: 'orders', underscored: true }
