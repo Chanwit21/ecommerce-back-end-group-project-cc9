@@ -7,7 +7,7 @@ exports.getAllCreditCard = async (req, res, next) => {
     const creditCard = await CreditCard.findOne({ where: { userId } });
     const customer = await retrieveCustomerPromise(creditCard.customerId);
 
-    res.status(200).json({ creditCards: customer.cards.data });
+    res.status(200).json({ creditCards: customer.cards.data, count: customer.cards.data.length });
   } catch (err) {
     next(err);
   }
