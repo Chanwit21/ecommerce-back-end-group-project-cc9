@@ -7,8 +7,10 @@ const passport = require('passport');
 const { errorMiddleWare } = require('./middleware/error');
 const userRoute = require('./routes/user');
 const productRouter = require('./routes/productRouter');
+const transactionRouter = require('./routes/transactionRouter');
 const cartRoute = require('./routes/cart');
 // const { sequelize } = require('./models');
+// sequelize.sync({ force: true });
 // sequelize.sync({ force: false });
 
 app.use(cors());
@@ -17,6 +19,8 @@ app.use(passport.initialize());
 
 app.use('/users', userRoute);
 app.use('/product', productRouter);
+app.use('/cart', userRoute);
+app.use('/transaction', transactionRouter);
 app.use('/carts', cartRoute);
 
 app.use((req, res, next) => {

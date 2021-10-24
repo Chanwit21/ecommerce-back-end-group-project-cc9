@@ -4,21 +4,17 @@ const { Product, FavoriteProduct, ProductImage, CartItem, Cart } = require('../m
 // get all data
 exports.getProductById = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const findName = await Product.findOne({
-      where: {
-        id,
-      },
-    });
+    const { productName } = req.params
     const product = await Product.findAll({
       where: {
-        name: findName.name,
-      },
-    });
+        name: productName
+      }
+    })
 
     const productImage = await ProductImage.findAll({
       where: {
-        '$Product.name$': findName.name,
+        '$Product.name$': productName
+
       },
       include: {
         model: Product,
@@ -42,11 +38,13 @@ exports.checkFavorite = async (req, res, next) => {
       },
     });
     const productId = [];
-    product.forEach((item) => productId.push({ id: item.id }));
+    product.forEach((item) => productId.push(+item.id));
     const favortie = await FavoriteProduct.findAll({
       where: {
         userId: req.user.id,
-        [Op.or]: [...productId],
+        productId: {
+          [Op.or]: [...productId]
+        },
       },
     });
 
@@ -61,10 +59,11 @@ exports.checkFavorite = async (req, res, next) => {
 };
 exports.createFavorite = async (req, res, next) => {
   try {
-    const { productId } = req.body;
+    const { productId, productName } = req.body;
     const data = await FavoriteProduct.create({
       productId,
       userId: req.user.id,
+      name: productName
     });
     res.status(201).json({ data });
   } catch (err) {
