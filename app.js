@@ -9,8 +9,11 @@ const userRoute = require('./routes/user');
 const productRouter = require('./routes/productRouter');
 const transactionRouter = require('./routes/transactionRouter');
 const creditCardRoute = require('./routes/creditCardRoute');
+const addressRoute = require('./routes/addressRoute');
 const cartRoute = require('./routes/cart');
-const omise = require('omise')({ secretKey: 'skey_test_5ov8h8rdpslf54x97k1' });
+const orderRoute = require('./routes/order');
+const locationRoute = require('./routes/location');
+// const omise = require('omise')({ secretKey: 'skey_test_5ov8h8rdpslf54x97k1' });
 // const { sequelize } = require('./models');
 // sequelize.sync({ force: true });
 // sequelize.sync({ force: false });
@@ -24,10 +27,17 @@ app.use('/product', productRouter);
 app.use('/transaction', transactionRouter);
 app.use('/carts', cartRoute);
 app.use('/credit_cards', creditCardRoute);
+app.use('/address', addressRoute);
+app.use('/orders', orderRoute);
+app.use('/locations', locationRoute);
 
 app.use((req, res, next) => {
   res.status(404).json({ message: 'resource not found!!' });
 });
+
+// omise.customers.destroyCard('cust_test_5plyzbicruac6hxxbnn', 'card_test_5pm3gdsu5x6i3mya94q', function (error, card) {
+//   /* Response. */
+// });
 
 app.use(errorMiddleWare);
 
