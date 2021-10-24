@@ -1,7 +1,33 @@
-const { User, Cart } = require('../models');
+const { User, Cart, CreditCard } = require('../models');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { isEmail, isStrongPassword } = require('validator');
+const omise = require('omise')({ secretKey: 'skey_test_5ov8h8rdpslf54x97k1' });
+const Customerror = require('../util/error');
+
+const createCartAndCreditCardOmise = async (userCreate) => {
+  // Create Cart when user registed
+  await Cart.create({ userId: userCreate.id });
+
+  //create customer id in omise
+  omise.customers.create(
+    {
+      description: `${userCreate.firstName + ' ' + userCreate.lastName} (id: ${userCreate.id})`,
+      email: userCreate.email,
+    },
+    async function (error, customer) {
+      if (error) {
+        throw new Customerror(error.message, 400);
+      } else {
+        try {
+          await CreditCard.create({ customerId: customer.id, userId: userCreate.id });
+        } catch (err) {
+          next(err);
+        }
+      }
+    }
+  );
+};
 
 exports.register = async (req, res, next) => {
   const { firstName, lastName, email, password } = req.body;
@@ -31,7 +57,7 @@ exports.register = async (req, res, next) => {
       res.status(400).json({ message: 'Email Already in Use.' });
     } else {
       const hashedPassword = await bcrypt.hash(password, 12);
-      const user = await User.create({
+      const userCreate = await User.create({
         firstName,
         lastName,
         email,
@@ -41,8 +67,7 @@ exports.register = async (req, res, next) => {
         facebookId: null,
       });
 
-      // Create Cart when user registed
-      await Cart.create({ userId: user.id });
+      await createCartAndCreditCardOmise(userCreate);
 
       res.status(201).json({ message: 'User has been created' });
     }
@@ -131,8 +156,7 @@ exports.loginWithGoogle = async (req, res, next) => {
         googleId: googleId,
       });
 
-      // Create Cart when user registed
-      await Cart.create({ userId: userCreate.id });
+      await createCartAndCreditCardOmise(userCreate);
 
       const payload = {
         id: userCreate.id,
@@ -182,8 +206,7 @@ exports.loginWithFacebook = async (req, res, next) => {
         facebookId: facebookId,
       });
 
-      // Create Cart when user registed
-      await Cart.create({ userId: userCreate.id });
+      await createCartAndCreditCardOmise(userCreate);
 
       const payload = {
         id: userCreate.id,
