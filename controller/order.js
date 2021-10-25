@@ -1,5 +1,7 @@
-const { Address, Order, CreditCard, OrderItem } = require('../models');
+const { Address, Order, CreditCard, OrderItem, Product } = require('../models');
 const { addCreditCard, createCharge, deleteCreditCard } = require('../util/omise');
+
+const processAfterCreateCharge = (charge, orders, customer) => {};
 
 exports.createOrderWithAddressAndCard = async (req, res, next) => {
   try {
@@ -9,9 +11,7 @@ exports.createOrderWithAddressAndCard = async (req, res, next) => {
     const creditCard = await CreditCard.findOne({ where: { userId } });
     const customer = await addCreditCard(creditCard.customerId, creditCardToken);
     const charge = await createCharge(customer.id, customer.default_card, amount);
-    if (charge.status === 'failed') {
-      await deleteCreditCard(customer.id, customer.default_card);
-    } else {
+    if (charge.status === 'successful') {
       const order = await Order.create({
         omiseCreatedAt: charge.created_at,
         cardId: charge.card.id,
@@ -25,16 +25,28 @@ exports.createOrderWithAddressAndCard = async (req, res, next) => {
         shippingTrackingId: '',
         addressId: address.id,
       });
+
+      // Update Stock
+      orders.forEach(async (product) => {
+        const { id, quality } = product;
+        const productUpdate = await Product.findOne({ where: { id: id } });
+        productUpdate.countStock = +productUpdate.countStock - +quality;
+        productUpdate.save();
+      });
+
       const orderItemCreate = orders.map((product) => {
+        const { id, quality } = product;
         return {
-          productId: product.id,
-          quality: product.quality,
+          productId: id,
+          quality: quality,
           orderId: order.id,
         };
       });
 
       await OrderItem.bulkCreate(orderItemCreate);
       return res.status(200).json({ charge, order });
+    } else {
+      await deleteCreditCard(customer.id, customer.default_card);
     }
     res.status(200).json({ charge });
   } catch (err) {
@@ -49,9 +61,7 @@ exports.createOrderWithCardAndAddressId = async (req, res, next) => {
     const creditCard = await CreditCard.findOne({ where: { userId } });
     const customer = await addCreditCard(creditCard.customerId, creditCardToken);
     const charge = await createCharge(customer.id, customer.default_card, amount);
-    if (charge.status === 'failed') {
-      await deleteCreditCard(customer.id, customer.default_card);
-    } else {
+    if (charge.status === 'successful') {
       const order = await Order.create({
         omiseCreatedAt: charge.created_at,
         cardId: charge.card.id,
@@ -65,16 +75,28 @@ exports.createOrderWithCardAndAddressId = async (req, res, next) => {
         shippingTrackingId: '',
         addressId: addressId,
       });
+
+      // Update Stock
+      orders.forEach(async (product) => {
+        const { id, quality } = product;
+        const productUpdate = await Product.findOne({ where: { id: id } });
+        productUpdate.countStock = +productUpdate.countStock - +quality;
+        productUpdate.save();
+      });
+
       const orderItemCreate = orders.map((product) => {
+        const { id, quality } = product;
         return {
-          productId: product.id,
-          quality: product.quality,
+          productId: id,
+          quality: quality,
           orderId: order.id,
         };
       });
 
       await OrderItem.bulkCreate(orderItemCreate);
       return res.status(200).json({ charge, order });
+    } else {
+      await deleteCreditCard(customer.id, customer.default_card);
     }
     res.status(200).json({ charge });
   } catch (err) {
@@ -89,9 +111,7 @@ exports.createOrderWithCardIdAndAddress = async (req, res, next) => {
     const address = await Address.create({ ...addressCreate, userId });
     const customer = await CreditCard.findOne({ where: { userId: userId } });
     const charge = await createCharge(customer.customerId, creditCardId, amount);
-    if (charge.status === 'failed') {
-      await deleteCreditCard(customer.customerId, creditCardId);
-    } else {
+    if (charge.status === 'successful') {
       const order = await Order.create({
         omiseCreatedAt: charge.created_at,
         cardId: charge.card.id,
@@ -105,16 +125,77 @@ exports.createOrderWithCardIdAndAddress = async (req, res, next) => {
         shippingTrackingId: '',
         addressId: address.id,
       });
+
+      // Update Stock
+      orders.forEach(async (product) => {
+        const { id, quality } = product;
+        const productUpdate = await Product.findOne({ where: { id: id } });
+        productUpdate.countStock = +productUpdate.countStock - +quality;
+        productUpdate.save();
+      });
+
       const orderItemCreate = orders.map((product) => {
+        const { id, quality } = product;
         return {
-          productId: product.id,
-          quality: product.quality,
+          productId: id,
+          quality: quality,
           orderId: order.id,
         };
       });
 
       await OrderItem.bulkCreate(orderItemCreate);
       return res.status(200).json({ charge, order });
+    } else {
+      await deleteCreditCard(customer.customerId, creditCardId);
+    }
+    res.status(200).json({ charge });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.createOrderWithCardIdAndAddressId = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { addressId, creditCardId, amount, orders } = req.body;
+    const customer = await CreditCard.findOne({ where: { userId: userId } });
+    const charge = await createCharge(customer.customerId, creditCardId, amount);
+    if (charge.status === 'successful') {
+      const order = await Order.create({
+        omiseCreatedAt: charge.created_at,
+        cardId: charge.card.id,
+        sourceId: null,
+        chargeId: charge.id,
+        amount: charge.amount / 100,
+        status: 'successful',
+        paidAt: charge.paid_at,
+        expiresAt: charge.expired_at,
+        shippingStatus: 'To Ship',
+        shippingTrackingId: '',
+        addressId: addressId,
+      });
+
+      // Update Stock
+      orders.forEach(async (product) => {
+        const { id, quality } = product;
+        const productUpdate = await Product.findOne({ where: { id: id } });
+        productUpdate.countStock = +productUpdate.countStock - +quality;
+        productUpdate.save();
+      });
+
+      const orderItemCreate = orders.map((product) => {
+        const { id, quality } = product;
+        return {
+          productId: id,
+          quality: quality,
+          orderId: order.id,
+        };
+      });
+
+      await OrderItem.bulkCreate(orderItemCreate);
+      return res.status(200).json({ charge, order });
+    } else {
+      await deleteCreditCard(customer.customerId, creditCardId);
     }
     res.status(200).json({ charge });
   } catch (err) {
