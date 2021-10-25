@@ -52,7 +52,7 @@ module.exports = (sequelize, DataTypes) => {
         name: 'productId',
         allowNull: false,
       },
-      onDelete: 'RESTRICT',
+      onDelete: 'CASCADE',
       onUpdate: 'RESTRICT',
     });
     Product.hasMany(models.CartItem, {
@@ -60,7 +60,7 @@ module.exports = (sequelize, DataTypes) => {
         name: 'productId',
         allowNull: false,
       },
-      onDelete: 'RESTRICT',
+      onDelete: 'CASCADE',
       onUpdate: 'RESTRICT',
     });
     Product.hasMany(models.FavoriteProduct, {
@@ -68,7 +68,7 @@ module.exports = (sequelize, DataTypes) => {
         name: 'productId',
         allowNull: false,
       },
-      onDelete: 'RESTRICT',
+      onDelete: 'CASCADE',
       onUpdate: 'RESTRICT',
     });
     Product.hasMany(models.ProductImage, {
@@ -76,7 +76,7 @@ module.exports = (sequelize, DataTypes) => {
         name: 'productId',
         allowNull: false,
       },
-      onDelete: 'RESTRICT',
+      onDelete: 'CASCADE',
       onUpdate: 'RESTRICT',
     });
   };

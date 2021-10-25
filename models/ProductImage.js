@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
         name: 'productId',
         allowNull: false,
       },
-      onDelete: 'RESTRICT',
+      onDelete: 'CASCADE',
       onUpdate: 'RESTRICT',
     });
   };

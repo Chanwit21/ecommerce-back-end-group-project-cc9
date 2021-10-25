@@ -1,5 +1,6 @@
 const { Op } = require('sequelize');
-const { Product, FavoriteProduct, ProductImage, CartItem, Cart } = require('../models');
+const { Product, FavoriteProduct, ProductImage, CartItem, Cart, OrderItem, Order } = require('../models');
+const cloundinaryUploadPromise = require('../util/upload');
 
 // get all data
 exports.getProductById = async (req, res, next) => {
@@ -80,7 +81,7 @@ exports.deleteFavorite = async (req, res, next) => {
         userId: req.user.id,
       },
     });
-    res.status(204);
+    res.status(204).json()
   } catch (err) {
     next(err);
   }
@@ -109,3 +110,151 @@ exports.createCartItem = async (req, res, next) => {
     next(err);
   }
 };
+
+
+exports.deleteProduct = async (req, res, next) => {
+  try {
+    const { productId } = req.params;
+    const rows = await Product.destroy({
+      where: {
+        id: productId,
+      },
+    })
+    console.log(`rows`, rows)
+    if (rows === 0) return res.status(400).json({ message: 'Delete is failed' })
+    res.status(204).json()
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getProductAll = async (req, res, next) => {
+  try {
+    const products = await Product.findAll();
+    res.json({ products });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.createNewProduct = async (req, res, next) => {
+  try {
+    const { name, description, price, cetagory, colorName, color, countStock, ingredient } = req.body;
+    const product = await Product.create({
+      name,
+      description,
+      price,
+      cetagory,
+      colorName,
+      color,
+      countStock,
+      ingredient
+    });
+
+    Promise.all(
+      req.files.map(item => cloundinaryUploadPromise(item.path))
+    )
+      .then(value => {
+        value.forEach(item => {
+          ProductImage.create({
+            imageUrl: item.secure_url,
+            productId: product.id
+          });
+        })
+      })
+      .catch(err => console.log(err))
+
+
+    res.status(201).json({ product });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getProductImageByProductId = async (req, res, next) => {
+  try {
+    const { productId } = req.params;
+    const productImage = await ProductImage.findAll({
+      where: {
+        productId
+      }
+    });
+
+    res.json({ productImage });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.updateProduct = async (req, res, next) => {
+  try {
+    const { name, description, price, cetagory, colorName, color, countStock, ingredient, deletedImg } = req.body;
+    const { productId } = req.params
+    const [rows] = await Product.update({
+      name,
+      description,
+      price,
+      cetagory,
+      colorName,
+      color,
+      countStock,
+      ingredient
+    },
+      {
+        where: {
+          id: productId
+        }
+      }
+    );
+
+    if (rows === 0) {
+      return res.status(400).json({ message: 'Update is failed' });
+    }
+    await ProductImage.destroy({
+      where: {
+        imageUrl: { [Op.or]: ['x', ...deletedImg.split(',')] }
+      },
+    })
+
+    await Promise.all(
+      req.files.map(item => cloundinaryUploadPromise(item.path))
+    )
+      .then(value => {
+        value.forEach(item => {
+          ProductImage.create({
+            imageUrl: item.secure_url,
+            productId: productId
+          });
+        })
+      })
+      .catch(err => console.log(err))
+
+    res.json({ message: 'Updated is Successful' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.readyToShip = async (req, res, next) => {
+  try {
+    const { productId } = req.params
+    const orderItem = await OrderItem.findAll({
+      where: {
+        productId,
+        '$Order.shipping_status$': 'To Ship'
+      },
+      include:
+      {
+        model: Order,
+        attributes: ['status', 'shippingStatus']
+      }
+    });
+
+    const numberOfReadytoSend = orderItem.reduce((acc, item) => acc + +item.quality, 0)
+
+    res.json({ numberOfReadytoSend })
+  }
+  catch (err) {
+    next(err)
+  }
+}
