@@ -128,7 +128,7 @@ exports.getOrderByTime = async (req, res, next) => {
       mascara: 0,
       bodyMakeup: 0,
     }
-    const orderId = [];
+    const orderId = ['x'];
     order.forEach(item => {
       orderId.push(+item.id)
     })
