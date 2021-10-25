@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
       sourceId: DataTypes.STRING,
       chargeId: DataTypes.STRING,
       amount: DataTypes.DECIMAL(8, 2),
-      status: DataTypes.STRING,
+      status: DataTypes.ENUM('successful', 'failed'),
       paidAt: DataTypes.DATE,
       expiresAt: DataTypes.DATE,
       shippingStatus: DataTypes.ENUM('To Ship', 'Delivery'),
