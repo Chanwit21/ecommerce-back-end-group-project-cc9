@@ -9,12 +9,14 @@ const userRoute = require('./routes/user');
 const productRouter = require('./routes/productRouter');
 const transactionRouter = require('./routes/transactionRouter');
 const cartRoute = require('./routes/cart');
-// const { sequelize } = require('./models');
+const { sequelize } = require('./models');
 // sequelize.sync({ force: true });
 // sequelize.sync({ force: false });
 
 app.use(cors());
 app.use(express.json());
+// app.use(express.urlencoded({ extended: true }));
+app.use(express.static('/public'))
 app.use(passport.initialize());
 
 app.use('/users', userRoute);
