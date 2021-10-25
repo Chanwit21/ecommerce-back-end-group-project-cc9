@@ -63,7 +63,7 @@ exports.register = async (req, res, next) => {
         email,
         imageUrl: null,
         password: hashedPassword,
-        facebookId: null,
+        googleId: null,
         facebookId: null,
       });
 
@@ -126,7 +126,7 @@ exports.login = async (req, res, next) => {
 
 exports.loginWithGoogle = async (req, res, next) => {
   try {
-    const { email, firstName, lastName, googleId } = req.body;
+    const { email, firstName, lastName, googleId, imageUrl } = req.body;
 
     if ([firstName, lastName, email, googleId].includes(undefined)) {
       return res.status(400).json({ message: 'firstName, lastName, email and googleId is require!!' });
@@ -150,7 +150,7 @@ exports.loginWithGoogle = async (req, res, next) => {
         firstName,
         lastName,
         email,
-        imageUrl: null,
+        imageUrl: imageUrl,
         password: null,
         facebookId: null,
         googleId: googleId,
@@ -176,7 +176,7 @@ exports.loginWithGoogle = async (req, res, next) => {
 
 exports.loginWithFacebook = async (req, res, next) => {
   try {
-    const { email, firstName, lastName, facebookId } = req.body;
+    const { email, firstName, lastName, facebookId, imageUrl } = req.body;
 
     if ([firstName, lastName, email, facebookId].includes(undefined)) {
       return res.status(400).json({ message: 'firstName, lastName, email and facebookId is require!!' });
@@ -200,7 +200,7 @@ exports.loginWithFacebook = async (req, res, next) => {
         firstName,
         lastName,
         email,
-        imageUrl: null,
+        imageUrl: imageUrl,
         password: null,
         googleId: null,
         facebookId: facebookId,
