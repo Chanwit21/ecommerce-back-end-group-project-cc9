@@ -9,5 +9,10 @@ router.post(
   passport.authenticate('jwtCustomer', { session: false }),
   cartController.updateCartItemById
 );
+router.delete(
+  '/cart_item/:cartItemId',
+  passport.authenticate('jwtCustomer', { session: false }),
+  cartController.deleteCartItemById
+);
 
 module.exports = router;

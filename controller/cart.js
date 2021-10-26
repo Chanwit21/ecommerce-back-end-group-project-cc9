@@ -49,3 +49,13 @@ exports.updateCartItemById = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.deleteCartItemById = async (req, res, next) => {
+  try {
+    const { cartItemId } = req.params;
+    await CartItem.destroy({ where: { id: cartItemId } });
+    res.status(204).json();
+  } catch (err) {
+    next(err);
+  }
+};
