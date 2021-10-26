@@ -29,6 +29,41 @@ exports.getProductById = async (req, res, next) => {
   }
 };
 
+exports.getProductNewAvailable = async (req, res, next) => {
+  try {
+    const newProduct = await Product.findAll({
+      order: [
+        ['updatedAt', 'DESC'],
+      ],
+      limit: 1
+    })
+
+    const product = await Product.findAll({
+      where: {
+        name: newProduct[0].name
+      }
+    })
+
+    console.log(`json.stringify(product)`, JSON.stringify(product, null, 2))
+
+
+    const productImage = await ProductImage.findAll({
+      where: {
+        '$Product.name$': product[0].name
+
+      },
+      include: {
+        model: Product,
+        // attributes: ['name', 'id']
+      },
+    });
+
+    res.json({ product, productImage });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.checkFavorite = async (req, res, next) => {
   try {
     const { productName } = req.body;
@@ -38,8 +73,9 @@ exports.checkFavorite = async (req, res, next) => {
         name: productName,
       },
     });
+    console.log(JSON.stringify(product, null, 2))
     const productId = [];
-    product.forEach((item) => productId.push(+item.id));
+    product.forEach((item) => productId.push(item.id));
     const favortie = await FavoriteProduct.findAll({
       where: {
         userId: req.user.id,
