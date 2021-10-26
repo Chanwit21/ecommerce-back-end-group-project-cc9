@@ -31,25 +31,21 @@ exports.getProductById = async (req, res, next) => {
 exports.getProductNewAvailable = async (req, res, next) => {
   try {
     const newProduct = await Product.findAll({
-      order: [
-        ['updatedAt', 'DESC'],
-      ],
-      limit: 1
-    })
+      order: [['updatedAt', 'DESC']],
+      limit: 1,
+    });
 
     const product = await Product.findAll({
       where: {
-        name: newProduct[0].name
-      }
-    })
+        name: newProduct[0].name,
+      },
+    });
 
-    console.log(`json.stringify(product)`, JSON.stringify(product, null, 2))
-
+    console.log(`json.stringify(product)`, JSON.stringify(product, null, 2));
 
     const productImage = await ProductImage.findAll({
       where: {
-        '$Product.name$': product[0].name
-
+        '$Product.name$': product[0].name,
       },
       include: {
         model: Product,
@@ -72,7 +68,7 @@ exports.checkFavorite = async (req, res, next) => {
         name: productName,
       },
     });
-    console.log(JSON.stringify(product, null, 2))
+    console.log(JSON.stringify(product, null, 2));
     const productId = [];
     product.forEach((item) => productId.push(item.id));
     const favortie = await FavoriteProduct.findAll({
@@ -318,6 +314,25 @@ exports.getAllProductByCategory = async (req, res, next) => {
     });
 
     res.status(200).json({ products });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getAllFavoriteProduct = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const result = await FavoriteProduct.findAll({
+      where: { userId },
+      include: { model: Product, include: { model: ProductImage } },
+    });
+    const favoriteProductList = result.map((item) => {
+      const { Product } = JSON.parse(JSON.stringify(item));
+      const clone = { ...Product };
+      delete clone.ProductImages;
+      return { ...clone, imageUrl: Product.ProductImages[0].imageUrl };
+    });
+    res.status(200).json({ favoriteProductList });
   } catch (err) {
     next(err);
   }

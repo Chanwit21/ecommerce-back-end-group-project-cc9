@@ -50,7 +50,16 @@ productRouter.get(
   productController.readyToShip
 );
 
+//BomB
+
 // AllProduct
 productRouter.get('/all_product/products', productController.getAllProductByCategory);
+
+//get All Fav
+productRouter.get(
+  '/favorite/All',
+  passport.authenticate('jwtCustomer', { session: false }),
+  productController.getAllFavoriteProduct
+);
 
 module.exports = productRouter;
