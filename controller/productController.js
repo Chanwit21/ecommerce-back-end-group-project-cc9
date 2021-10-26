@@ -5,7 +5,7 @@ const cloundinaryUploadPromise = require('../util/upload');
 // get all data
 exports.getProductById = async (req, res, next) => {
   try {
-    const { productName } = req.params
+    const { productName } = req.params;
     const product = await Product.findAll({
       where: {
         name: productName,
@@ -37,25 +37,21 @@ exports.getProductById = async (req, res, next) => {
 exports.getProductNewArrival = async (req, res, next) => {
   try {
     const newProduct = await Product.findAll({
-      order: [
-        ['updatedAt', 'DESC'],
-      ],
-      limit: 1
-    })
+      order: [['updatedAt', 'DESC']],
+      limit: 1,
+    });
 
     const product = await Product.findAll({
       where: {
-        name: newProduct[0].name
-      }
-    })
+        name: newProduct[0].name,
+      },
+    });
 
-    console.log(`json.stringify(product)`, JSON.stringify(product, null, 2))
-
+    console.log(`json.stringify(product)`, JSON.stringify(product, null, 2));
 
     const productImage = await ProductImage.findAll({
       where: {
-        '$Product.name$': product[0].name
-
+        '$Product.name$': product[0].name,
       },
       include: {
         model: Product,
@@ -78,14 +74,14 @@ exports.checkFavorite = async (req, res, next) => {
         name: productName,
       },
     });
-    console.log(JSON.stringify(product, null, 2))
+    console.log(JSON.stringify(product, null, 2));
     const productId = [];
     product.forEach((item) => productId.push(item.id));
     const favortie = await FavoriteProduct.findAll({
       where: {
         userId: req.user.id,
         productId: {
-          [Op.or]: [...productId]
+          [Op.or]: [...productId],
         },
       },
     });
@@ -105,7 +101,7 @@ exports.createFavorite = async (req, res, next) => {
     const data = await FavoriteProduct.create({
       productId,
       userId: req.user.id,
-      name: productName
+      name: productName,
     });
     res.status(201).json({ data });
   } catch (err) {
@@ -122,7 +118,7 @@ exports.deleteFavorite = async (req, res, next) => {
         userId: req.user.id,
       },
     });
-    res.status(204).json()
+    res.status(204).json();
   } catch (err) {
     next(err);
   }
@@ -152,7 +148,6 @@ exports.createCartItem = async (req, res, next) => {
   }
 };
 
-
 exports.deleteProduct = async (req, res, next) => {
   try {
     const { productId } = req.params;
@@ -160,10 +155,10 @@ exports.deleteProduct = async (req, res, next) => {
       where: {
         id: productId,
       },
-    })
-    console.log(`rows`, rows)
-    if (rows === 0) return res.status(400).json({ message: 'Delete is failed' })
-    res.status(204).json()
+    });
+    console.log(`rows`, rows);
+    if (rows === 0) return res.status(400).json({ message: 'Delete is failed' });
+    res.status(204).json();
   } catch (err) {
     next(err);
   }
@@ -189,22 +184,19 @@ exports.createNewProduct = async (req, res, next) => {
       colorName,
       color,
       countStock,
-      ingredient
+      ingredient,
     });
 
-    Promise.all(
-      req.files.map(item => cloundinaryUploadPromise(item.path))
-    )
-      .then(value => {
-        value.forEach(item => {
+    Promise.all(req.files.map((item) => cloundinaryUploadPromise(item.path)))
+      .then((value) => {
+        value.forEach((item) => {
           ProductImage.create({
             imageUrl: item.secure_url,
-            productId: product.id
+            productId: product.id,
           });
-        })
+        });
       })
-      .catch(err => console.log(err))
-
+      .catch((err) => console.log(err));
 
     res.status(201).json({ product });
   } catch (err) {
@@ -217,8 +209,8 @@ exports.getProductImageByProductId = async (req, res, next) => {
     const { productId } = req.params;
     const productImage = await ProductImage.findAll({
       where: {
-        productId
-      }
+        productId,
+      },
     });
 
     res.json({ productImage });
@@ -230,21 +222,22 @@ exports.getProductImageByProductId = async (req, res, next) => {
 exports.updateProduct = async (req, res, next) => {
   try {
     const { name, description, price, cetagory, colorName, color, countStock, ingredient, deletedImg } = req.body;
-    const { productId } = req.params
-    const [rows] = await Product.update({
-      name,
-      description,
-      price,
-      cetagory,
-      colorName,
-      color,
-      countStock,
-      ingredient
-    },
+    const { productId } = req.params;
+    const [rows] = await Product.update(
+      {
+        name,
+        description,
+        price,
+        cetagory,
+        colorName,
+        color,
+        countStock,
+        ingredient,
+      },
       {
         where: {
-          id: productId
-        }
+          id: productId,
+        },
       }
     );
 
@@ -253,22 +246,20 @@ exports.updateProduct = async (req, res, next) => {
     }
     await ProductImage.destroy({
       where: {
-        imageUrl: { [Op.or]: ['x', ...deletedImg.split(',')] }
+        imageUrl: { [Op.or]: ['x', ...deletedImg.split(',')] },
       },
-    })
+    });
 
-    await Promise.all(
-      req.files.map(item => cloundinaryUploadPromise(item.path))
-    )
-      .then(value => {
-        value.forEach(item => {
+    await Promise.all(req.files.map((item) => cloundinaryUploadPromise(item.path)))
+      .then((value) => {
+        value.forEach((item) => {
           ProductImage.create({
             imageUrl: item.secure_url,
-            productId: productId
+            productId: productId,
           });
-        })
+        });
       })
-      .catch(err => console.log(err))
+      .catch((err) => console.log(err));
 
     res.json({ message: 'Updated is Successful' });
   } catch (err) {
@@ -278,24 +269,77 @@ exports.updateProduct = async (req, res, next) => {
 
 exports.readyToShip = async (req, res, next) => {
   try {
-    const { productId } = req.params
+    const { productId } = req.params;
     const orderItem = await OrderItem.findAll({
       where: {
         productId,
-        '$Order.shipping_status$': 'To Ship'
+        '$Order.shipping_status$': 'To Ship',
       },
-      include:
-      {
+      include: {
         model: Order,
-        attributes: ['status', 'shippingStatus']
-      }
+        attributes: ['status', 'shippingStatus'],
+      },
     });
 
-    const numberOfReadytoSend = orderItem.reduce((acc, item) => acc + +item.quality, 0)
+    const numberOfReadytoSend = orderItem.reduce((acc, item) => acc + +item.quality, 0);
 
-    res.json({ numberOfReadytoSend })
+    res.json({ numberOfReadytoSend });
+  } catch (err) {
+    next(err);
   }
-  catch (err) {
-    next(err)
+};
+
+exports.getAllProductByCategory = async (req, res, next) => {
+  try {
+    const { category } = req.query;
+
+    if (category === 'All Product') {
+      const result = await Product.findAll({
+        group: ['name'],
+        include: { model: ProductImage, attributes: ['imageUrl'] },
+      });
+      const products = result.map((product) => {
+        const { ProductImages } = product.dataValues;
+        const clone = { ...product.dataValues };
+        delete clone.ProductImages;
+        return { ...clone, imageUrl: ProductImages[0]?.imageUrl };
+      });
+      return res.status(200).json({ products });
+    }
+
+    const result = await Product.findAll({
+      group: ['name'],
+      where: { cetagory: category },
+      include: { model: ProductImage, attributes: ['imageUrl'] },
+    });
+    const products = result.map((product) => {
+      const { ProductImages } = product.dataValues;
+      const clone = { ...product.dataValues };
+      delete clone.ProductImages;
+      return { ...clone, imageUrl: ProductImages[0]?.imageUrl };
+    });
+
+    res.status(200).json({ products });
+  } catch (err) {
+    next(err);
   }
-}
+};
+
+exports.getAllFavoriteProduct = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const result = await FavoriteProduct.findAll({
+      where: { userId },
+      include: { model: Product, include: { model: ProductImage } },
+    });
+    const favoriteProductList = result.map((item) => {
+      const { Product } = JSON.parse(JSON.stringify(item));
+      const clone = { ...Product };
+      delete clone.ProductImages;
+      return { ...clone, imageUrl: Product.ProductImages[0].imageUrl };
+    });
+    res.status(200).json({ favoriteProductList });
+  } catch (err) {
+    next(err);
+  }
+};
