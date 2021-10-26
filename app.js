@@ -14,7 +14,7 @@ const cartRoute = require('./routes/cart');
 const orderRoute = require('./routes/order');
 const locationRoute = require('./routes/location');
 // const omise = require('omise')({ secretKey: 'skey_test_5ov8h8rdpslf54x97k1' });
-// const { sequelize } = require('./models');
+const { sequelize } = require('./models');
 // sequelize.sync({ force: true });
 // sequelize.sync({ force: false });
 
