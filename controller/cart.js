@@ -21,6 +21,22 @@ exports.getAllCartItem = async (req, res, next) => {
   }
 };
 
+exports.addCartItem = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { quality, productId } = req.body;
+    const cart = await Cart.findOne({ where: { userId: userId } });
+    const cartItem = await CartItem.create({ cartId: cart.id, productId, quality });
+    const product = await Product.findOne({ where: { id: productId }, include: { model: ProductImage } });
+    const clone = { ...JSON.parse(JSON.stringify(product)) };
+    const imageUrl = clone.ProductImages[0].imageUrl;
+    delete clone.ProductImages;
+    res.status(200).json({ cartItem: { ...clone, imageUrl: imageUrl, ...JSON.parse(JSON.stringify(cartItem)) } });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.updateCartItemById = async (req, res, next) => {
   try {
     const { cartItemId } = req.params;
