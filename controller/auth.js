@@ -63,7 +63,7 @@ exports.register = async (req, res, next) => {
         email,
         imageUrl: null,
         password: hashedPassword,
-        facebookId: null,
+        googleId: null,
         facebookId: null,
       });
 

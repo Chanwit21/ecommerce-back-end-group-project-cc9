@@ -33,3 +33,22 @@ exports.deleteCreditCard = (customer_id, card_id) =>
       }
     });
   });
+
+exports.createCharge = (customer_id, card_id, amount) =>
+  new Promise((resolve, reject) => {
+    omise.charges.create(
+      {
+        amount: amount * 100,
+        currency: 'THB',
+        customer: customer_id,
+        card: card_id,
+      },
+      function (error, charge) {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(charge);
+        }
+      }
+    );
+  });
