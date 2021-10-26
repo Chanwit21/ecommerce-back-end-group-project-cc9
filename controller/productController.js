@@ -38,7 +38,7 @@ exports.checkFavorite = async (req, res, next) => {
       },
     });
     const productId = [];
-    product.forEach((item) => productId.push(+item.id));
+    product.forEach((item) => productId.push(item.id));
     const favortie = await FavoriteProduct.findAll({
       where: {
         userId: req.user.id,
@@ -254,7 +254,23 @@ exports.readyToShip = async (req, res, next) => {
 exports.getAllProductByCategory = async (req, res, next) => {
   try {
     const { category } = req.query;
+
+    if (category === 'All Product') {
+      const result = await Product.findAll({
+        group: ['name'],
+        include: { model: ProductImage, attributes: ['imageUrl'] },
+      });
+      const products = result.map((product) => {
+        const { ProductImages } = product.dataValues;
+        const clone = { ...product.dataValues };
+        delete clone.ProductImages;
+        return { ...clone, imageUrl: ProductImages[0]?.imageUrl };
+      });
+      return res.status(200).json({ products });
+    }
+
     const result = await Product.findAll({
+      group: ['name'],
       where: { cetagory: category },
       include: { model: ProductImage, attributes: ['imageUrl'] },
     });
@@ -264,6 +280,7 @@ exports.getAllProductByCategory = async (req, res, next) => {
       delete clone.ProductImages;
       return { ...clone, imageUrl: ProductImages[0]?.imageUrl };
     });
+
     res.status(200).json({ products });
   } catch (err) {
     next(err);
