@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const { isEmail, isStrongPassword } = require('validator');
 const omise = require('omise')({ secretKey: 'skey_test_5ov8h8rdpslf54x97k1' });
 const Customerror = require('../util/error');
+const cloundinaryUploadPromise = require('../util/upload');
 
 const createCartAndCreditCardOmise = async (userCreate) => {
   // Create Cart when user registed
@@ -223,3 +224,47 @@ exports.loginWithFacebook = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.editUserInformation = async (req, res, next) => {
+  try {
+    const { firstName, lastName, email, phoneNumber } = req.body
+    const result = req.file && await cloundinaryUploadPromise(req.file.path)
+    const rows = await User.update({
+      firstName,
+      lastName,
+      email,
+      phoneNumber,
+      imageUrl: result?.secure_url
+    },
+      {
+        where: {
+          id: req.user.id
+        }
+      })
+
+    if (rows === 0) {
+      return res.status(400).json({ message: 'Update is failed' });
+    }
+
+    res.json({ message: 'Updated is Successful' });
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+exports.getUserById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findOne({
+      where: {
+        id,
+      },
+      attributes: ['firstName', 'lastName', 'email', 'imageUrl', 'phoneNumber', 'gender', 'id']
+    });
+
+    res.json({ user });
+  } catch (err) {
+    next(err);
+  }
+}
