@@ -187,7 +187,7 @@ exports.createNewProduct = async (req, res, next) => {
       ingredient,
     });
 
-    Promise.all(req.files.map((item) => cloundinaryUploadPromise(item.path)))
+    await Promise.all(req.files.map((item) => cloundinaryUploadPromise(item.path)))
       .then((value) => {
         value.forEach((item) => {
           ProductImage.create({
