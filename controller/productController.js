@@ -9,12 +9,18 @@ exports.getProductById = async (req, res, next) => {
     const product = await Product.findAll({
       where: {
         name: productName,
-      },
-    });
+        countStock: { [Op.gt]: 0 }
+      }
+    })
+
+    const productId = [];
+    product.forEach(item => {
+      productId.push(item.id)
+    })
 
     const productImage = await ProductImage.findAll({
       where: {
-        '$Product.name$': productName,
+        '$Product.id$': { [Op.or]: productId.length ? productId : [null] }
       },
       include: {
         model: Product,
@@ -28,7 +34,7 @@ exports.getProductById = async (req, res, next) => {
   }
 };
 
-exports.getProductNewAvailable = async (req, res, next) => {
+exports.getProductNewArrival = async (req, res, next) => {
   try {
     const newProduct = await Product.findAll({
       order: [['updatedAt', 'DESC']],

@@ -5,20 +5,12 @@ const { upload } = require('../middleware/multer');
 
 const productRouter = express.Router();
 
-productRouter.get('/:productName', productController.getProductById);
-productRouter.get('/newAvailable/newAvailable', productController.getProductNewAvailable);
-productRouter.post(
-  '/checkFavorite',
-  passport.authenticate('jwtAll', { session: false }),
-  productController.checkFavorite
-);
-productRouter.post('/favorite', passport.authenticate('jwtAll', { session: false }), productController.createFavorite);
-productRouter.post('/cart', passport.authenticate('jwtAll', { session: false }), productController.createCartItem);
-productRouter.delete(
-  '/favorite/:productId',
-  passport.authenticate('jwtAll', { session: false }),
-  productController.deleteFavorite
-);
+productRouter.get('/byProductName/:productName', productController.getProductById)
+productRouter.get('arrival', productController.getProductNewArrival)
+productRouter.post('/checkFavorite', passport.authenticate('jwtAll', { session: false }), productController.checkFavorite)
+productRouter.post('/favorite', passport.authenticate('jwtAll', { session: false }), productController.createFavorite)
+productRouter.post('/cart', passport.authenticate('jwtAll', { session: false }), productController.createCartItem)
+productRouter.delete('/favorite/:productId', passport.authenticate('jwtAll', { session: false }), productController.deleteFavorite)
 
 //*product-Summary
 productRouter.get('/', passport.authenticate('jwtAdmin', { session: false }), productController.getProductAll);
