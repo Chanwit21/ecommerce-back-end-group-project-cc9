@@ -291,20 +291,44 @@ exports.readyToShip = async (req, res, next) => {
 
 exports.getAllProductByCategory = async (req, res, next) => {
   try {
-    const { category, offset } = req.query;
-    console.log(offset);
+    const { category, offset, filter } = req.query;
+    const filterObj = JSON.parse(filter);
 
     if (category === 'All Product') {
-      const count = await Product.findAll({
+      let array = [];
+      for (let key in filterObj) {
+        array = array.concat(filterObj[key]);
+      }
+      const arrayObjectToQuery = array.map((item) => {
+        return {
+          name: {
+            [Op.substring]: item,
+          },
+        };
+      });
+      const objCount = {
+        where: {
+          [Op.or]: arrayObjectToQuery,
+        },
         group: ['name'],
         attributes: [[Sequelize.fn('COUNT', Sequelize.col('*')), 'count']],
-      });
-      const result = await Product.findAll({
+      };
+
+      const objNormal = {
+        where: {
+          [Op.or]: arrayObjectToQuery,
+        },
         group: ['name'],
         include: { model: ProductImage, attributes: ['imageUrl'] },
         limit: 9,
         offset: +offset,
-      });
+      };
+      if (arrayObjectToQuery.length === 0) {
+        delete objNormal.where;
+        delete objCount.where;
+      }
+      const count = await Product.findAll(objCount);
+      const result = await Product.findAll(objNormal);
 
       const products = result.map((product) => {
         const { ProductImages } = product.dataValues;
@@ -316,14 +340,30 @@ exports.getAllProductByCategory = async (req, res, next) => {
       return res.status(200).json({ products, count: count.length });
     }
 
+    const arrayObjectToQuery = filterObj[category.toUpperCase()].map((item) => {
+      return {
+        name: {
+          [Op.substring]: item,
+        },
+      };
+    });
+
+    let objWhere = {};
+
+    if (arrayObjectToQuery.length === 0) {
+      objWhere = { cetagory: category };
+    } else {
+      objWhere = { cetagory: category, [Op.or]: arrayObjectToQuery };
+    }
+
     const count = await Product.findAll({
+      where: objWhere,
       group: ['name'],
-      where: { cetagory: category },
       attributes: [[Sequelize.fn('COUNT', Sequelize.col('*')), 'count']],
     });
     const result = await Product.findAll({
+      where: objWhere,
       group: ['name'],
-      where: { cetagory: category },
       include: { model: ProductImage, attributes: ['imageUrl'] },
       limit: 9,
       offset: +offset,
