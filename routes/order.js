@@ -22,5 +22,10 @@ router.post(
   passport.authenticate('jwtCustomer', { session: false }),
   orderController.createOrderWithCardIdAndAddressId
 );
+router.get(
+  '/getOrderItemById/:id',
+  passport.authenticate('jwtCustomer', { session: false }),
+  orderController.getOrderItemById
+);
 
 module.exports = router;

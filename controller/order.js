@@ -1,7 +1,8 @@
-const { Address, Order, CreditCard, OrderItem, Product, CartItem } = require('../models');
+const { Address, Order, CreditCard, OrderItem, Product, CartItem, ProductImage, User } = require('../models');
 const { addCreditCard, createCharge, deleteCreditCard } = require('../util/omise');
+const { Op } = require("sequelize");
 
-const processAfterCreateCharge = (charge, orders, customer) => {};
+const processAfterCreateCharge = (charge, orders, customer) => { };
 
 exports.createOrderWithAddressAndCard = async (req, res, ncartIdext) => {
   try {
@@ -210,3 +211,54 @@ exports.createOrderWithCardIdAndAddressId = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getOrderItemById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const orderItemData = await OrderItem.findAll({
+      where: {
+        orderId: id
+      },
+      attributes: ['id', 'quality', 'productId', 'orderId'],
+      include: [{
+        model: Product,
+        attributes: ['price', 'name', 'color'],
+        include: {
+          model: ProductImage,
+          attributes: ['imageUrl']
+        }
+      },
+      {
+        model: Order,
+        attributes: ['shippingTrackingId', 'cardId', 'shippingStatus'],
+        include: {
+          model: Address,
+          include: {
+            model: User,
+            attributes: ['email']
+          }
+        }
+      }
+      ]
+    })
+    const orderItem = orderItemData.map(item => {
+      return {
+        id: item.id,
+        imageUrl: item.Product.ProductImages[0].imageUrl,
+        quality: item.quality,
+        name: item.Product.name,
+        colorName: item.Product.color,
+        price: item.Product.price,
+        orderId: item.orderId,
+        amount: item.Product.price * item.quality,
+        tracking: item.Order.shippingTrackingId,
+        cardId: item.Order.cardId,
+        status: item.Order.shippingStatus
+      }
+    })
+    res.json({ orderItem, address: orderItemData[0].Order.Address })
+  }
+  catch (err) {
+    next(err)
+  }
+}
