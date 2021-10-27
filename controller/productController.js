@@ -294,6 +294,26 @@ exports.getAllProductByCategory = async (req, res, next) => {
     const { category, offset, filter } = req.query;
     const filterObj = JSON.parse(filter);
 
+    // This is dictionary
+    const dicTionary = {
+      foundation: 'foundation',
+      concealer: 'concealer',
+      powder: 'powder',
+      primer: 'primer',
+      eyebrows: 'brow',
+      eyeliner: 'eyeliner',
+      eyeshadow: 'shadow',
+      mascara: 'mascara',
+      lipBalm: 'balm',
+      lipLiner: 'lip liner',
+      lipstick: 'lipstick',
+      liquidLip: 'liquid',
+      blush: 'blush',
+      bronzer: 'bronzer',
+      highlighter: 'highlighter',
+      bodyMakeup: 'body',
+    };
+
     if (category === 'All Product') {
       let array = [];
       for (let key in filterObj) {
@@ -302,7 +322,7 @@ exports.getAllProductByCategory = async (req, res, next) => {
       const arrayObjectToQuery = array.map((item) => {
         return {
           name: {
-            [Op.substring]: item,
+            [Op.substring]: dicTionary[item],
           },
         };
       });
@@ -343,7 +363,7 @@ exports.getAllProductByCategory = async (req, res, next) => {
     const arrayObjectToQuery = filterObj[category.toUpperCase()].map((item) => {
       return {
         name: {
-          [Op.substring]: item,
+          [Op.substring]: dicTionary[item],
         },
       };
     });
