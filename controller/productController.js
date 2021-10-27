@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { Product, FavoriteProduct, ProductImage, CartItem, Cart, OrderItem, Order } = require('../models');
+const { Product, FavoriteProduct, ProductImage, CartItem, Cart, OrderItem, Order, Sequelize } = require('../models');
 const cloundinaryUploadPromise = require('../util/upload');
 
 // get all data
@@ -9,18 +9,18 @@ exports.getProductById = async (req, res, next) => {
     const product = await Product.findAll({
       where: {
         name: productName,
-        countStock: { [Op.gt]: 0 }
-      }
-    })
+        countStock: { [Op.gt]: 0 },
+      },
+    });
 
     const productId = [];
-    product.forEach(item => {
-      productId.push(item.id)
-    })
+    product.forEach((item) => {
+      productId.push(item.id);
+    });
 
     const productImage = await ProductImage.findAll({
       where: {
-        '$Product.id$': { [Op.or]: productId.length ? productId : [null] }
+        '$Product.id$': { [Op.or]: productId.length ? productId : [null] },
       },
       include: {
         model: Product,
@@ -187,7 +187,7 @@ exports.createNewProduct = async (req, res, next) => {
       ingredient,
     });
 
-    Promise.all(req.files.map((item) => cloundinaryUploadPromise(item.path)))
+    await Promise.all(req.files.map((item) => cloundinaryUploadPromise(item.path)))
       .then((value) => {
         value.forEach((item) => {
           ProductImage.create({
@@ -291,26 +291,42 @@ exports.readyToShip = async (req, res, next) => {
 
 exports.getAllProductByCategory = async (req, res, next) => {
   try {
-    const { category } = req.query;
+    const { category, offset } = req.query;
+    console.log(offset);
 
     if (category === 'All Product') {
+      const count = await Product.findAll({
+        group: ['name'],
+        attributes: [[Sequelize.fn('COUNT', Sequelize.col('*')), 'count']],
+      });
       const result = await Product.findAll({
         group: ['name'],
         include: { model: ProductImage, attributes: ['imageUrl'] },
+        limit: 9,
+        offset: +offset,
       });
+
       const products = result.map((product) => {
         const { ProductImages } = product.dataValues;
         const clone = { ...product.dataValues };
         delete clone.ProductImages;
         return { ...clone, imageUrl: ProductImages[0]?.imageUrl };
       });
-      return res.status(200).json({ products });
+
+      return res.status(200).json({ products, count: count.length });
     }
 
+    const count = await Product.findAll({
+      group: ['name'],
+      where: { cetagory: category },
+      attributes: [[Sequelize.fn('COUNT', Sequelize.col('*')), 'count']],
+    });
     const result = await Product.findAll({
       group: ['name'],
       where: { cetagory: category },
       include: { model: ProductImage, attributes: ['imageUrl'] },
+      limit: 9,
+      offset: +offset,
     });
     const products = result.map((product) => {
       const { ProductImages } = product.dataValues;
@@ -319,7 +335,7 @@ exports.getAllProductByCategory = async (req, res, next) => {
       return { ...clone, imageUrl: ProductImages[0]?.imageUrl };
     });
 
-    res.status(200).json({ products });
+    res.status(200).json({ products, count: count.length });
   } catch (err) {
     next(err);
   }

@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       description: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: false,
       },
       price: {
@@ -28,18 +28,16 @@ module.exports = (sequelize, DataTypes) => {
       },
       colorName: {
         type: DataTypes.STRING,
-        allowNUll: false,
       },
       color: {
         type: DataTypes.STRING,
-        allowNUll: false,
       },
       countStock: {
         type: DataTypes.STRING,
         allowNUll: false,
       },
       ingredient: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNUll: false,
       },
     },
