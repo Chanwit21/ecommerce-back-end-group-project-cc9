@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { Product, FavoriteProduct, ProductImage, CartItem, Cart, OrderItem, Order } = require('../models');
+const { Product, FavoriteProduct, ProductImage, CartItem, Cart, OrderItem, Order, Sequelize } = require('../models');
 const cloundinaryUploadPromise = require('../util/upload');
 
 // get all data
@@ -9,12 +9,18 @@ exports.getProductById = async (req, res, next) => {
     const product = await Product.findAll({
       where: {
         name: productName,
+        countStock: { [Op.gt]: 0 },
       },
+    });
+
+    const productId = [];
+    product.forEach((item) => {
+      productId.push(item.id);
     });
 
     const productImage = await ProductImage.findAll({
       where: {
-        '$Product.name$': productName,
+        '$Product.id$': { [Op.or]: productId.length ? productId : [null] },
       },
       include: {
         model: Product,
@@ -28,28 +34,24 @@ exports.getProductById = async (req, res, next) => {
   }
 };
 
-exports.getProductNewAvailable = async (req, res, next) => {
+exports.getProductNewArrival = async (req, res, next) => {
   try {
     const newProduct = await Product.findAll({
-      order: [
-        ['updatedAt', 'DESC'],
-      ],
-      limit: 1
-    })
+      order: [['updatedAt', 'DESC']],
+      limit: 1,
+    });
 
     const product = await Product.findAll({
       where: {
-        name: newProduct[0].name
-      }
-    })
+        name: newProduct[0].name,
+      },
+    });
 
-    console.log(`json.stringify(product)`, JSON.stringify(product, null, 2))
-
+    console.log(`json.stringify(product)`, JSON.stringify(product, null, 2));
 
     const productImage = await ProductImage.findAll({
       where: {
-        '$Product.name$': product[0].name
-
+        '$Product.name$': product[0].name,
       },
       include: {
         model: Product,
@@ -72,7 +74,7 @@ exports.checkFavorite = async (req, res, next) => {
         name: productName,
       },
     });
-    console.log(JSON.stringify(product, null, 2))
+    console.log(JSON.stringify(product, null, 2));
     const productId = [];
     product.forEach((item) => productId.push(item.id));
     const favortie = await FavoriteProduct.findAll({
@@ -185,7 +187,7 @@ exports.createNewProduct = async (req, res, next) => {
       ingredient,
     });
 
-    Promise.all(req.files.map((item) => cloundinaryUploadPromise(item.path)))
+    await Promise.all(req.files.map((item) => cloundinaryUploadPromise(item.path)))
       .then((value) => {
         value.forEach((item) => {
           ProductImage.create({
@@ -289,26 +291,117 @@ exports.readyToShip = async (req, res, next) => {
 
 exports.getAllProductByCategory = async (req, res, next) => {
   try {
-    const { category } = req.query;
+    const { category, offset, filter } = req.query;
+    const filterObj = JSON.parse(filter);
 
-    if (category === 'All Product') {
-      const result = await Product.findAll({
+    // This is dictionary
+    const dicTionary = {
+      foundation: 'foundation',
+      concealer: 'concealer',
+      powder: 'powder',
+      primer: 'primer',
+      eyebrows: 'brow',
+      eyeliner: 'eyeliner',
+      eyeshadow: 'shadow',
+      mascara: 'mascara',
+      lipBalm: 'balm',
+      lipLiner: 'lip liner',
+      lipstick: 'lipstick',
+      liquidLip: 'liquid',
+      blush: 'blush',
+      bronzer: 'bronzer',
+      highlighter: 'highlighter',
+      bodyMakeup: 'body',
+    };
+
+    if (!['face', 'sheek', 'lips', 'eyes', 'body'].includes(category)) {
+      let array = [];
+      for (let key in filterObj) {
+        array = array.concat(filterObj[key]);
+      }
+
+      const arrayObjectToQuery = array.map((item) => {
+        return {
+          name: {
+            [Op.substring]: dicTionary[item],
+          },
+        };
+      });
+
+      if (category !== 'All Product') {
+        arrayObjectToQuery.push({
+          name: {
+            [Op.substring]: category.split(':')[1],
+          },
+        });
+        arrayObjectToQuery.push({
+          cetagory: {
+            [Op.substring]: category.split(':')[1],
+          },
+        });
+      }
+
+      const objCount = {
+        where: {
+          [Op.or]: arrayObjectToQuery,
+        },
+        group: ['name'],
+        attributes: [[Sequelize.fn('COUNT', Sequelize.col('*')), 'count']],
+      };
+
+      const objNormal = {
+        where: {
+          [Op.or]: arrayObjectToQuery,
+        },
         group: ['name'],
         include: { model: ProductImage, attributes: ['imageUrl'] },
-      });
+        limit: 9,
+        offset: +offset,
+      };
+      if (arrayObjectToQuery.length === 0) {
+        delete objNormal.where;
+        delete objCount.where;
+      }
+      const count = await Product.findAll(objCount);
+      const result = await Product.findAll(objNormal);
+
       const products = result.map((product) => {
         const { ProductImages } = product.dataValues;
         const clone = { ...product.dataValues };
         delete clone.ProductImages;
         return { ...clone, imageUrl: ProductImages[0]?.imageUrl };
       });
-      return res.status(200).json({ products });
+
+      return res.status(200).json({ products, count: count.length });
     }
 
-    const result = await Product.findAll({
+    const arrayObjectToQuery = filterObj[category.toUpperCase()].map((item) => {
+      return {
+        name: {
+          [Op.substring]: dicTionary[item],
+        },
+      };
+    });
+
+    let objWhere = {};
+
+    if (arrayObjectToQuery.length === 0) {
+      objWhere = { cetagory: category };
+    } else {
+      objWhere = { cetagory: category, [Op.or]: arrayObjectToQuery };
+    }
+
+    const count = await Product.findAll({
+      where: objWhere,
       group: ['name'],
-      where: { cetagory: category },
+      attributes: [[Sequelize.fn('COUNT', Sequelize.col('*')), 'count']],
+    });
+    const result = await Product.findAll({
+      where: objWhere,
+      group: ['name'],
       include: { model: ProductImage, attributes: ['imageUrl'] },
+      limit: 9,
+      offset: +offset,
     });
     const products = result.map((product) => {
       const { ProductImages } = product.dataValues;
@@ -317,7 +410,26 @@ exports.getAllProductByCategory = async (req, res, next) => {
       return { ...clone, imageUrl: ProductImages[0]?.imageUrl };
     });
 
-    res.status(200).json({ products });
+    res.status(200).json({ products, count: count.length });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getAllFavoriteProduct = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const result = await FavoriteProduct.findAll({
+      where: { userId },
+      include: { model: Product, include: { model: ProductImage } },
+    });
+    const favoriteProductList = result.map((item) => {
+      const { Product } = JSON.parse(JSON.stringify(item));
+      const clone = { ...Product };
+      delete clone.ProductImages;
+      return { ...clone, imageUrl: Product.ProductImages[0].imageUrl };
+    });
+    res.status(200).json({ favoriteProductList });
   } catch (err) {
     next(err);
   }

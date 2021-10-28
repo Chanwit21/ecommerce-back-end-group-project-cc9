@@ -15,6 +15,7 @@ const orderRoute = require("./routes/order");
 const locationRoute = require("./routes/location");
 // const omise = require('omise')({ secretKey: 'skey_test_5ov8h8rdpslf54x97k1' });
 const { sequelize } = require("./models");
+const contactUsRouter = require("./routes/contactUsRouter");
 // sequelize.sync({ force: true });
 // sequelize.sync({ force: false });
 
@@ -32,6 +33,7 @@ app.use("/credit_cards", creditCardRoute);
 app.use("/address", addressRoute);
 app.use("/orders", orderRoute);
 app.use("/locations", locationRoute);
+app.use("/contactUs", contactUsRouter);
 
 app.use((req, res, next) => {
   res.status(404).json({ message: "resource not found!!" });
