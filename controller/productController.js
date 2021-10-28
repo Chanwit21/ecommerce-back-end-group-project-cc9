@@ -314,11 +314,12 @@ exports.getAllProductByCategory = async (req, res, next) => {
       bodyMakeup: 'body',
     };
 
-    if (category === 'All Product') {
+    if (!['face', 'sheek', 'lips', 'eyes', 'body'].includes(category)) {
       let array = [];
       for (let key in filterObj) {
         array = array.concat(filterObj[key]);
       }
+
       const arrayObjectToQuery = array.map((item) => {
         return {
           name: {
@@ -326,6 +327,20 @@ exports.getAllProductByCategory = async (req, res, next) => {
           },
         };
       });
+
+      if (category !== 'All Product') {
+        arrayObjectToQuery.push({
+          name: {
+            [Op.substring]: category.split(':')[1],
+          },
+        });
+        arrayObjectToQuery.push({
+          cetagory: {
+            [Op.substring]: category.split(':')[1],
+          },
+        });
+      }
+
       const objCount = {
         where: {
           [Op.or]: arrayObjectToQuery,
