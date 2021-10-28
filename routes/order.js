@@ -26,7 +26,7 @@ router.put("/order_admin_edit_shipping_info/:orderId", orderController.orderAdmi
 router.get("/", passport.authenticate("jwtAll", { session: false }), orderController.getAllOrder);
 router.get(
   "/getOrderItemById/:id",
-  passport.authenticate("jwtCustomer", { session: false }),
+  passport.authenticate("jwtAll", { session: false }),
   orderController.getOrderItemById
 );
 
