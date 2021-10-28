@@ -16,7 +16,7 @@ const locationRoute = require("./routes/location");
 // const omise = require('omise')({ secretKey: 'skey_test_5ov8h8rdpslf54x97k1' });
 const { sequelize } = require("./models");
 const contactUsRouter = require("./routes/contactUsRouter");
-sequelize.sync({ force: true });
+// sequelize.sync({ force: true });
 // sequelize.sync({ force: false });
 
 app.use(cors());
