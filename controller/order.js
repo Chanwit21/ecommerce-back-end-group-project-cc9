@@ -231,6 +231,7 @@ exports.getAllOrder = async (req, res, next) => {
     });
 
     const getAllOrder = await Order.findAll({
+      order: [['omiseCreatedAt', 'DESC']],
       include: { model: Address, include: { model: User } },
       where: {
         '$Address.User.id$': req.user.role === 'CUSTOMER' ? req.user.id : { [Op.or]: [] },
