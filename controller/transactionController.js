@@ -111,24 +111,44 @@ exports.getOrderByTime = async (req, res, next) => {
 
     //* category
     const categoryResult = {
-      foundation: 0,
-      power: 0,
-      concealer: 0,
-      primer: 0,
-      blush: 0,
-      bronzer: 0,
-      highlighter: 0,
-      liquidLipstick: 0,
-      lipstick: 0,
-      lipLiner: 0,
-      lipBlam: 0,
-      eyeShadow: 0,
-      eyeBrows: 0,
-      eyeLiner: 0,
-      mascara: 0,
-      bodyMakeup: 0,
+      Foundation: 0,
+      Concealer: 0,
+      Powder: 0,
+      Primer: 0,
+      'Eye Brows': 0,
+      'Eye Liner': 0,
+      'Eye Shadow': 0,
+      Mascara: 0,
+      'Lip Blam': 0,
+      'Lip Liner': 0,
+      'Lip Stick': 0,
+      'Liquid Lipstick': 0,
+      Blush: 0,
+      Bronzer: 0,
+      Highlighter: 0,
+      BodyMakeup: 0,
     }
-    const orderId = ['x'];
+
+    const dicTionary = {
+      Foundation: 'foundation',
+      Concealer: 'concealer',
+      Powder: 'powder',
+      Primer: 'primer',
+      'Eye Brows': 'brow',
+      'Eye Liner': 'eyeliner',
+      'Eye Shadow': 'shadow',
+      Mascara: 'mascara',
+      'Lip Blam': 'balm',
+      'Lip Liner': 'lip liner',
+      'Lip Stick': 'lipstick',
+      'Liquid Lipstick': 'liquid',
+      Blush: 'blush',
+      Bronzer: 'bronzer',
+      Highlighter: 'highlighter',
+      BodyMakeup: 'body',
+    };
+
+    const orderId = [];
     order.forEach(item => {
       orderId.push(+item.id)
     })
@@ -139,8 +159,8 @@ exports.getOrderByTime = async (req, res, next) => {
     for (const [key, value] of Object.entries(categoryResult)) {
       const categoryItem = await OrderItem.findAll({
         where: {
-          '$Product.cetagory$': { [Op.like]: `%${key}%` },
-          orderId: { [Op.or]: [...orderId] }
+          '$Product.name$': { [Op.like]: `%${dicTionary[key]}%` },
+          orderId: { [Op.or]: orderId.length ? orderId : [null] }
         },
         include: [
           {

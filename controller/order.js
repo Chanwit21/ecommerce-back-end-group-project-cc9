@@ -2,7 +2,7 @@ const { Address, Order, CreditCard, OrderItem, Product, CartItem, ProductImage, 
 const { addCreditCard, createCharge, deleteCreditCard } = require("../util/omise");
 const { Op } = require("sequelize");
 
-const processAfterCreateCharge = (charge, orders, customer) => {};
+const processAfterCreateCharge = (charge, orders, customer) => { };
 
 exports.createOrderWithAddressAndCard = async (req, res, ncartIdext) => {
   try {
@@ -214,7 +214,13 @@ exports.createOrderWithCardIdAndAddressId = async (req, res, next) => {
 
 exports.getAllOrder = async (req, res, next) => {
   try {
-    const getAllOrder = await Order.findAll({ include: { model: Address, include: { model: User } } });
+    console.log(`req.user`, req.user)
+    const getAllOrder = await Order.findAll({
+      include: { model: Address, include: { model: User } },
+      where: {
+        '$Address.User.id$': req.user.role === 'CUSTOMER' ? req.user.id : { [Op.or]: [] }
+      }
+    });
 
     const orderItems = getAllOrder.map((orderList) => {
       const { id, omiseCreatedAt, amount, shippingStatus, Address, shippingTrackingId } = orderList;

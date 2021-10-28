@@ -23,7 +23,7 @@ router.post(
   orderController.createOrderWithCardIdAndAddressId
 );
 router.put("/order_admin_edit_shipping_info/:orderId", orderController.orderAdminEditShippingInfo);
-router.get("/", orderController.getAllOrder);
+router.get("/", passport.authenticate("jwtAll", { session: false }), orderController.getAllOrder);
 router.get(
   "/getOrderItemById/:id",
   passport.authenticate("jwtCustomer", { session: false }),
