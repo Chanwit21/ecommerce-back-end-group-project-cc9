@@ -1,5 +1,5 @@
-const { Address, Order, CreditCard, OrderItem, Product } = require('../models');
-const { addCreditCard, createCharge, deleteCreditCard } = require('../util/omise');
+const { Address, Order, User, CreditCard, OrderItem, Product } = require("../models");
+const { addCreditCard, createCharge, deleteCreditCard } = require("../util/omise");
 
 const processAfterCreateCharge = (charge, orders, customer) => {};
 
@@ -11,18 +11,18 @@ exports.createOrderWithAddressAndCard = async (req, res, next) => {
     const creditCard = await CreditCard.findOne({ where: { userId } });
     const customer = await addCreditCard(creditCard.customerId, creditCardToken);
     const charge = await createCharge(customer.id, customer.default_card, amount);
-    if (charge.status === 'successful') {
+    if (charge.status === "successful") {
       const order = await Order.create({
         omiseCreatedAt: charge.created_at,
         cardId: charge.card.id,
         sourceId: null,
         chargeId: charge.id,
         amount: charge.amount / 100,
-        status: 'successful',
+        status: "successful",
         paidAt: charge.paid_at,
         expiresAt: charge.expired_at,
-        shippingStatus: 'To Ship',
-        shippingTrackingId: '',
+        shippingStatus: "To Ship",
+        shippingTrackingId: "",
         addressId: address.id,
       });
 
@@ -61,18 +61,18 @@ exports.createOrderWithCardAndAddressId = async (req, res, next) => {
     const creditCard = await CreditCard.findOne({ where: { userId } });
     const customer = await addCreditCard(creditCard.customerId, creditCardToken);
     const charge = await createCharge(customer.id, customer.default_card, amount);
-    if (charge.status === 'successful') {
+    if (charge.status === "successful") {
       const order = await Order.create({
         omiseCreatedAt: charge.created_at,
         cardId: charge.card.id,
         sourceId: null,
         chargeId: charge.id,
         amount: charge.amount / 100,
-        status: 'successful',
+        status: "successful",
         paidAt: charge.paid_at,
         expiresAt: charge.expired_at,
-        shippingStatus: 'To Ship',
-        shippingTrackingId: '',
+        shippingStatus: "To Ship",
+        shippingTrackingId: "",
         addressId: addressId,
       });
 
@@ -111,18 +111,18 @@ exports.createOrderWithCardIdAndAddress = async (req, res, next) => {
     const address = await Address.create({ ...addressCreate, userId });
     const customer = await CreditCard.findOne({ where: { userId: userId } });
     const charge = await createCharge(customer.customerId, creditCardId, amount);
-    if (charge.status === 'successful') {
+    if (charge.status === "successful") {
       const order = await Order.create({
         omiseCreatedAt: charge.created_at,
         cardId: charge.card.id,
         sourceId: null,
         chargeId: charge.id,
         amount: charge.amount / 100,
-        status: 'successful',
+        status: "successful",
         paidAt: charge.paid_at,
         expiresAt: charge.expired_at,
-        shippingStatus: 'To Ship',
-        shippingTrackingId: '',
+        shippingStatus: "To Ship",
+        shippingTrackingId: "",
         addressId: address.id,
       });
 
@@ -160,18 +160,18 @@ exports.createOrderWithCardIdAndAddressId = async (req, res, next) => {
     const { addressId, creditCardId, amount, orders } = req.body;
     const customer = await CreditCard.findOne({ where: { userId: userId } });
     const charge = await createCharge(customer.customerId, creditCardId, amount);
-    if (charge.status === 'successful') {
+    if (charge.status === "successful") {
       const order = await Order.create({
         omiseCreatedAt: charge.created_at,
         cardId: charge.card.id,
         sourceId: null,
         chargeId: charge.id,
         amount: charge.amount / 100,
-        status: 'successful',
+        status: "successful",
         paidAt: charge.paid_at,
         expiresAt: charge.expired_at,
-        shippingStatus: 'To Ship',
-        shippingTrackingId: '',
+        shippingStatus: "To Ship",
+        shippingTrackingId: "",
         addressId: addressId,
       });
 
@@ -198,6 +198,40 @@ exports.createOrderWithCardIdAndAddressId = async (req, res, next) => {
       await deleteCreditCard(customer.customerId, creditCardId);
     }
     res.status(200).json({ charge });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getAllOrder = async (req, res, next) => {
+  try {
+    const getAllOrder = await Order.findAll({ include: { model: Address, include: { model: User } } });
+
+    const orderItems = getAllOrder.map((orderList) => {
+      const { id, omiseCreatedAt, amount, shippingStatus, Address, shippingTrackingId } = orderList;
+      return {
+        orderId: id,
+        firstname: Address.User.firstName,
+        date: omiseCreatedAt,
+        amount: amount,
+        shippingStatus: shippingStatus,
+        shippingTrackingId: shippingTrackingId,
+      };
+    });
+    // console.log("mapItem : ", orderItems);
+    res.status(200).json({ orderItems });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.orderAdminEditShippingInfo = async (req, res, next) => {
+  try {
+    const { id, shippingStatus, shippingTrackingId } = req.body;
+    const { orderId } = req.params;
+    const updateShippingInfo = await Order.update({ shippingStatus, shippingTrackingId }, { where: { id: orderId } });
+    res.status(201).json(updateShippingInfo);
+    console.log(shippingTrackingId);
   } catch (err) {
     next(err);
   }
