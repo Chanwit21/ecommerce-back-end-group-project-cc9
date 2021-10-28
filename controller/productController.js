@@ -1,5 +1,15 @@
 const { Op } = require('sequelize');
-const { Product, FavoriteProduct, ProductImage, CartItem, Cart, OrderItem, Order, Sequelize } = require('../models');
+const {
+  Product,
+  FavoriteProduct,
+  ProductImage,
+  CartItem,
+  Cart,
+  OrderItem,
+  Order,
+  Sequelize,
+  sequelize,
+} = require('../models');
 const cloundinaryUploadPromise = require('../util/upload');
 
 // get all data
@@ -47,8 +57,6 @@ exports.getProductNewArrival = async (req, res, next) => {
       },
     });
 
-    console.log(`json.stringify(product)`, JSON.stringify(product, null, 2));
-
     const productImage = await ProductImage.findAll({
       where: {
         '$Product.name$': product[0].name,
@@ -74,7 +82,6 @@ exports.checkFavorite = async (req, res, next) => {
         name: productName,
       },
     });
-    console.log(JSON.stringify(product, null, 2));
     const productId = [];
     product.forEach((item) => productId.push(item.id));
     const favortie = await FavoriteProduct.findAll({
@@ -128,7 +135,6 @@ exports.createCartItem = async (req, res, next) => {
   try {
     const { quality, productId } = req.body; //quantity
     let userCart = await Cart.findOne({ where: { userId: req.user.id } });
-    console.log(`userCart`, userCart);
 
     if (!userCart) {
       userCart = await Cart.create({
@@ -156,7 +162,6 @@ exports.deleteProduct = async (req, res, next) => {
         id: productId,
       },
     });
-    console.log(`rows`, rows);
     if (rows === 0) return res.status(400).json({ message: 'Delete is failed' });
     res.status(204).json();
   } catch (err) {
@@ -166,8 +171,65 @@ exports.deleteProduct = async (req, res, next) => {
 
 exports.getProductAll = async (req, res, next) => {
   try {
-    const products = await Product.findAll();
-    res.json({ products });
+    const { filter, offset } = req.query;
+    const filterObj = JSON.parse(filter);
+
+    // This is dictionary
+    const dicTionary = {
+      foundation: 'foundation',
+      concealer: 'concealer',
+      powder: 'powder',
+      primer: 'primer',
+      eyebrows: 'brow',
+      eyeliner: 'eyeliner',
+      eyeshadow: 'shadow',
+      mascara: 'mascara',
+      lipBalm: 'balm',
+      lipLiner: 'lip liner',
+      lipstick: 'lipstick',
+      liquidLip: 'liquid',
+      blush: 'blush',
+      bronzer: 'bronzer',
+      highlighter: 'highlighter',
+      bodyMakeup: 'body',
+    };
+
+    let array = [];
+    for (let key in filterObj) {
+      array = array.concat(filterObj[key]);
+    }
+
+    const arrayObjectToQuery = array.map((item) => {
+      return {
+        name: {
+          [Op.substring]: dicTionary[item],
+        },
+      };
+    });
+
+    const objCondition = {
+      where: { [Op.or]: arrayObjectToQuery },
+      limit: 7,
+      offset: +offset,
+    };
+
+    const objCount = {
+      where: { [Op.or]: arrayObjectToQuery },
+    };
+
+    if (arrayObjectToQuery.length === 0) {
+      delete objCondition.where;
+      delete objCount.where;
+    }
+
+    const productCount = await Product.findAll({
+      ...objCount,
+      attributes: [[Sequelize.fn('COUNT', Sequelize.col('*')), 'countProduct']],
+    });
+
+    const products = await Product.findAll(objCondition);
+
+    res.json({ products, count: productCount[0] });
   } catch (err) {
     next(err);
   }
@@ -430,6 +492,28 @@ exports.getAllFavoriteProduct = async (req, res, next) => {
       return { ...clone, imageUrl: Product.ProductImages[0].imageUrl };
     });
     res.status(200).json({ favoriteProductList });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getFeatureProduct = async (req, res, next) => {
+  try {
+    const query =
+      'SELECT p.name AS name,p.id AS id, p.price AS price, pi.image_url AS imageUrl FROM `products` p LEFT JOIN `product_images` pi ON pi.product_id = p.id ORDER BY p.created_at DESC LIMIT 3;';
+    const [featureProduct] = await sequelize.query(query);
+    res.status(200).json({ featureProduct });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getBestSellerProduct = async (req, res, next) => {
+  try {
+    const query =
+      'SELECT SUM(oi.quality*p.price),p.id AS id,p.name AS name,pi.image_url AS imageUrl,p.price AS price FROM `order_items` oi LEFT JOIN `products` p ON oi.product_id = p.id LEFT JOIN `product_images` pi ON pi.product_id = p.id  GROUP BY p.id ORDER BY SUM(oi.quality*p.price) DESC LIMIT 3';
+    const [bestSellerProduct] = await sequelize.query(query);
+    res.status(200).json({ bestSellerProduct });
   } catch (err) {
     next(err);
   }
