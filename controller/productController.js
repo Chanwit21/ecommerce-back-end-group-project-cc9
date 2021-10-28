@@ -166,8 +166,66 @@ exports.deleteProduct = async (req, res, next) => {
 
 exports.getProductAll = async (req, res, next) => {
   try {
-    const products = await Product.findAll();
-    res.json({ products });
+    const { filter, offset } = req.query;
+    const filterObj = JSON.parse(filter);
+
+    // This is dictionary
+    const dicTionary = {
+      foundation: 'foundation',
+      concealer: 'concealer',
+      powder: 'powder',
+      primer: 'primer',
+      eyebrows: 'brow',
+      eyeliner: 'eyeliner',
+      eyeshadow: 'shadow',
+      mascara: 'mascara',
+      lipBalm: 'balm',
+      lipLiner: 'lip liner',
+      lipstick: 'lipstick',
+      liquidLip: 'liquid',
+      blush: 'blush',
+      bronzer: 'bronzer',
+      highlighter: 'highlighter',
+      bodyMakeup: 'body',
+    };
+
+    let array = [];
+    for (let key in filterObj) {
+      array = array.concat(filterObj[key]);
+    }
+
+    const arrayObjectToQuery = array.map((item) => {
+      return {
+        name: {
+          [Op.substring]: dicTionary[item],
+        },
+      };
+    });
+
+    const objCondition = {
+      where: { [Op.or]: arrayObjectToQuery },
+      limit: 7,
+      offset: +offset,
+    };
+
+    const objCount = {
+      where: { [Op.or]: arrayObjectToQuery },
+    };
+
+    if (arrayObjectToQuery.length === 0) {
+      delete objCondition.where;
+      delete objCount.where;
+    }
+
+    const productCount = await Product.findAll({
+      ...objCount,
+      attributes: [[Sequelize.fn('COUNT', Sequelize.col('*')), 'countProduct']],
+    });
+    console.log(productCount);
+
+    const products = await Product.findAll(objCondition);
+
+    res.json({ products, count: productCount[0] });
   } catch (err) {
     next(err);
   }
