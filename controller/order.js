@@ -1,8 +1,18 @@
-const { Address, Order, CreditCard, OrderItem, Product, CartItem, ProductImage, User } = require("../models");
-const { addCreditCard, createCharge, deleteCreditCard } = require("../util/omise");
-const { Op } = require("sequelize");
+const {
+  Address,
+  Order,
+  CreditCard,
+  OrderItem,
+  Product,
+  CartItem,
+  ProductImage,
+  User,
+  Sequelize,
+} = require('../models');
+const { addCreditCard, createCharge, deleteCreditCard } = require('../util/omise');
+const { Op } = require('sequelize');
 
-const processAfterCreateCharge = (charge, orders, customer) => { };
+const processAfterCreateCharge = (charge, orders, customer) => {};
 
 exports.createOrderWithAddressAndCard = async (req, res, ncartIdext) => {
   try {
@@ -12,18 +22,18 @@ exports.createOrderWithAddressAndCard = async (req, res, ncartIdext) => {
     const creditCard = await CreditCard.findOne({ where: { userId } });
     const customer = await addCreditCard(creditCard.customerId, creditCardToken);
     const charge = await createCharge(customer.id, customer.default_card, amount);
-    if (charge.status === "successful") {
+    if (charge.status === 'successful') {
       const order = await Order.create({
         omiseCreatedAt: charge.created_at,
         cardId: charge.card.id,
         sourceId: null,
         chargeId: charge.id,
         amount: charge.amount / 100,
-        status: "successful",
+        status: 'successful',
         paidAt: charge.paid_at,
         expiresAt: charge.expired_at,
-        shippingStatus: "To Ship",
-        shippingTrackingId: "",
+        shippingStatus: 'To Ship',
+        shippingTrackingId: '',
         addressId: address.id,
       });
 
@@ -64,18 +74,18 @@ exports.createOrderWithCardAndAddressId = async (req, res, next) => {
     const creditCard = await CreditCard.findOne({ where: { userId } });
     const customer = await addCreditCard(creditCard.customerId, creditCardToken);
     const charge = await createCharge(customer.id, customer.default_card, amount);
-    if (charge.status === "successful") {
+    if (charge.status === 'successful') {
       const order = await Order.create({
         omiseCreatedAt: charge.created_at,
         cardId: charge.card.id,
         sourceId: null,
         chargeId: charge.id,
         amount: charge.amount / 100,
-        status: "successful",
+        status: 'successful',
         paidAt: charge.paid_at,
         expiresAt: charge.expired_at,
-        shippingStatus: "To Ship",
-        shippingTrackingId: "",
+        shippingStatus: 'To Ship',
+        shippingTrackingId: '',
         addressId: addressId,
       });
 
@@ -116,18 +126,18 @@ exports.createOrderWithCardIdAndAddress = async (req, res, next) => {
     const address = await Address.create({ ...addressCreate, userId });
     const customer = await CreditCard.findOne({ where: { userId: userId } });
     const charge = await createCharge(customer.customerId, creditCardId, amount);
-    if (charge.status === "successful") {
+    if (charge.status === 'successful') {
       const order = await Order.create({
         omiseCreatedAt: charge.created_at,
         cardId: charge.card.id,
         sourceId: null,
         chargeId: charge.id,
         amount: charge.amount / 100,
-        status: "successful",
+        status: 'successful',
         paidAt: charge.paid_at,
         expiresAt: charge.expired_at,
-        shippingStatus: "To Ship",
-        shippingTrackingId: "",
+        shippingStatus: 'To Ship',
+        shippingTrackingId: '',
         addressId: address.id,
       });
 
@@ -167,18 +177,18 @@ exports.createOrderWithCardIdAndAddressId = async (req, res, next) => {
     const { addressId, creditCardId, amount, orders, cartId } = req.body;
     const customer = await CreditCard.findOne({ where: { userId: userId } });
     const charge = await createCharge(customer.customerId, creditCardId, amount);
-    if (charge.status === "successful") {
+    if (charge.status === 'successful') {
       const order = await Order.create({
         omiseCreatedAt: charge.created_at,
         cardId: charge.card.id,
         sourceId: null,
         chargeId: charge.id,
         amount: charge.amount / 100,
-        status: "successful",
+        status: 'successful',
         paidAt: charge.paid_at,
         expiresAt: charge.expired_at,
-        shippingStatus: "To Ship",
-        shippingTrackingId: "",
+        shippingStatus: 'To Ship',
+        shippingTrackingId: '',
         addressId: addressId,
       });
 
@@ -214,12 +224,19 @@ exports.createOrderWithCardIdAndAddressId = async (req, res, next) => {
 
 exports.getAllOrder = async (req, res, next) => {
   try {
-    console.log(`req.user`, req.user)
+    const { offset } = req.query;
+    const count = await Order.findAll({
+      group: 'shippingStatus',
+      attributes: [[Sequelize.fn('COUNT', Sequelize.col('*')), 'count'], 'shippingStatus'],
+    });
+
     const getAllOrder = await Order.findAll({
       include: { model: Address, include: { model: User } },
       where: {
-        '$Address.User.id$': req.user.role === 'CUSTOMER' ? req.user.id : { [Op.or]: [] }
-      }
+        '$Address.User.id$': req.user.role === 'CUSTOMER' ? req.user.id : { [Op.or]: [] },
+      },
+      limit: 7,
+      offset: +offset,
     });
 
     const orderItems = getAllOrder.map((orderList) => {
@@ -233,8 +250,7 @@ exports.getAllOrder = async (req, res, next) => {
         shippingTrackingId: shippingTrackingId,
       };
     });
-    // console.log("mapItem : ", orderItems);
-    res.status(200).json({ orderItems });
+    res.status(200).json({ orderItems, count });
   } catch (err) {
     next(err);
   }
@@ -251,6 +267,7 @@ exports.orderAdminEditShippingInfo = async (req, res, next) => {
     next(err);
   }
 };
+
 exports.getOrderItemById = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -258,24 +275,24 @@ exports.getOrderItemById = async (req, res, next) => {
       where: {
         orderId: id,
       },
-      attributes: ["id", "quality", "productId", "orderId"],
+      attributes: ['id', 'quality', 'productId', 'orderId'],
       include: [
         {
           model: Product,
-          attributes: ["price", "name", "color"],
+          attributes: ['price', 'name', 'color'],
           include: {
             model: ProductImage,
-            attributes: ["imageUrl"],
+            attributes: ['imageUrl'],
           },
         },
         {
           model: Order,
-          attributes: ["shippingTrackingId", "cardId", "shippingStatus"],
+          attributes: ['shippingTrackingId', 'cardId', 'shippingStatus'],
           include: {
             model: Address,
             include: {
               model: User,
-              attributes: ["email"],
+              attributes: ['email'],
             },
           },
         },
