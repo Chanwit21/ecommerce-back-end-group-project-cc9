@@ -57,8 +57,6 @@ exports.getProductNewArrival = async (req, res, next) => {
       },
     });
 
-    console.log(`json.stringify(product)`, JSON.stringify(product, null, 2));
-
     const productImage = await ProductImage.findAll({
       where: {
         '$Product.name$': product[0].name,
@@ -84,7 +82,6 @@ exports.checkFavorite = async (req, res, next) => {
         name: productName,
       },
     });
-    console.log(JSON.stringify(product, null, 2));
     const productId = [];
     product.forEach((item) => productId.push(item.id));
     const favortie = await FavoriteProduct.findAll({
@@ -138,7 +135,6 @@ exports.createCartItem = async (req, res, next) => {
   try {
     const { quality, productId } = req.body; //quantity
     let userCart = await Cart.findOne({ where: { userId: req.user.id } });
-    console.log(`userCart`, userCart);
 
     if (!userCart) {
       userCart = await Cart.create({
@@ -166,7 +162,6 @@ exports.deleteProduct = async (req, res, next) => {
         id: productId,
       },
     });
-    console.log(`rows`, rows);
     if (rows === 0) return res.status(400).json({ message: 'Delete is failed' });
     res.status(204).json();
   } catch (err) {
@@ -231,7 +226,6 @@ exports.getProductAll = async (req, res, next) => {
       ...objCount,
       attributes: [[Sequelize.fn('COUNT', Sequelize.col('*')), 'countProduct']],
     });
-    console.log(productCount);
 
     const products = await Product.findAll(objCondition);
 
