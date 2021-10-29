@@ -1,7 +1,7 @@
-const { Sequelize } = require("sequelize");
+const { Sequelize } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   const Address = sequelize.define(
-    "Address",
+    'Address',
     {
       id: {
         type: DataTypes.UUID,
@@ -9,9 +9,20 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: Sequelize.UUIDV4,
       },
-      detail: {
+      firstName: {
         type: DataTypes.STRING,
         allowNull: false,
+      },
+      lastName: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      address1: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      address2: {
+        type: DataTypes.STRING,
       },
       subDistrict: {
         type: DataTypes.STRING,
@@ -29,26 +40,30 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      phoneNumber: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
     },
-    { tableName: "addresses", underscored: true }
+    { tableName: 'addresses', underscored: true }
   );
 
   Address.associate = (models) => {
     Address.belongsTo(models.User, {
       foreignKey: {
-        name: "userId",
+        name: 'userId',
         allowNull: false,
       },
-      onDelete: "RESTRICT",
-      onUpdate: "RESTRICT",
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT',
     });
     Address.hasMany(models.Order, {
       foreignKey: {
-        name: "addressId",
+        name: 'addressId',
         allowNull: false,
       },
-      onDelete: "RESTRICT",
-      onUpdate: "RESTRICT",
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT',
     });
   };
 

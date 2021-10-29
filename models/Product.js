@@ -1,8 +1,8 @@
-const { Sequelize } = require("sequelize");
+const { Sequelize } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
   const Product = sequelize.define(
-    "Product",
+    'Product',
     {
       id: {
         type: DataTypes.UUID,
@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       description: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: false,
       },
       price: {
@@ -26,42 +26,56 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNUll: false,
       },
+      colorName: {
+        type: DataTypes.STRING,
+      },
+      color: {
+        type: DataTypes.STRING,
+      },
+      countStock: {
+        type: DataTypes.STRING,
+        allowNUll: false,
+      },
+      ingredient: {
+        type: DataTypes.TEXT,
+        allowNUll: false,
+      },
     },
-    { tableName: "products", underscored: true }
+    { tableName: 'products', underscored: true }
   );
 
   Product.associate = (models) => {
     Product.hasMany(models.OrderItem, {
       foreignKey: {
-        name: "productId",
+        name: 'productId',
         allowNull: false,
       },
-      onDelete: "RESTRICT",
-      onUpdate: "RESTRICT",
+      onDelete: 'CASCADE',
+      onUpdate: 'RESTRICT',
     });
     Product.hasMany(models.CartItem, {
       foreignKey: {
-        name: "productId",
+        name: 'productId',
         allowNull: false,
       },
-      onDelete: "RESTRICT",
-      onUpdate: "RESTRICT",
+      onDelete: 'CASCADE',
+      onUpdate: 'RESTRICT',
     });
     Product.hasMany(models.FavoriteProduct, {
       foreignKey: {
-        name: "productId",
+        name: 'productId',
         allowNull: false,
       },
-      onDelete: "RESTRICT",
-      onUpdate: "RESTRICT",
+      onDelete: 'CASCADE',
+      onUpdate: 'RESTRICT',
     });
     Product.hasMany(models.ProductImage, {
       foreignKey: {
-        name: "productId",
+        name: 'productId',
         allowNull: false,
       },
-      onDelete: "RESTRICT",
-      onUpdate: "RESTRICT",
+      onDelete: 'CASCADE',
+      onUpdate: 'RESTRICT',
     });
   };
 
