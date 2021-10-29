@@ -18,6 +18,10 @@ exports.getOrderByTime = async (req, res, next) => {
       },
     });
 
+    order.map((item, index) => {
+      order[index].paidAt = new Date(moment.utc(item.paidAt).add(7, 'hours').format())
+    })
+
     //* find percent
     let percent = 0;
     let oldOrder = [];
