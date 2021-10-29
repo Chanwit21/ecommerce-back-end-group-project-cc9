@@ -5,7 +5,7 @@ const { upload } = require('../middleware/multer');
 
 const productRouter = express.Router();
 
-productRouter.get('/byProductName/:productName', productController.getProductById);
+productRouter.post('/byProductName', productController.getProductByName);
 productRouter.get('/arrival', productController.getProductNewArrival);
 productRouter.post(
   '/checkFavorite',

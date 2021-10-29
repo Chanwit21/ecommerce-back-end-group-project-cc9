@@ -13,9 +13,9 @@ const {
 const cloundinaryUploadPromise = require('../util/upload');
 
 // get all data
-exports.getProductById = async (req, res, next) => {
+exports.getProductByName = async (req, res, next) => {
   try {
-    const { productName } = req.params;
+    const { productName } = req.body;
     const product = await Product.findAll({
       where: {
         name: productName,
