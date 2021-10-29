@@ -500,7 +500,7 @@ exports.getAllFavoriteProduct = async (req, res, next) => {
 exports.getFeatureProduct = async (req, res, next) => {
   try {
     const query =
-      'SELECT p.name AS name,p.id AS id, p.price AS price, pi.image_url AS imageUrl FROM `products` p LEFT JOIN `product_images` pi ON pi.product_id = p.id ORDER BY p.created_at DESC LIMIT 3;';
+      'SELECT p.name AS name,p.id AS id, p.price AS price, pi.image_url AS imageUrl FROM `products` p LEFT JOIN `product_images` pi ON pi.product_id = p.id ORDER BY p.created_at DESC LIMIT 3 OFFSET 1;';
     const [featureProduct] = await sequelize.query(query);
     res.status(200).json({ featureProduct });
   } catch (err) {
