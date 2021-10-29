@@ -369,7 +369,7 @@ exports.getAllProductByCategory = async (req, res, next) => {
       lipBalm: 'balm',
       lipLiner: 'lip liner',
       lipstick: 'lipstick',
-      liquidLip: 'liquid',
+      liquidLipstick: 'liquid',
       blush: 'blush',
       bronzer: 'bronzer',
       highlighter: 'highlighter',
