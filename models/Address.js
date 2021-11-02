@@ -45,7 +45,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
     },
-    { tableName: 'addresses', underscored: true }
+    { tableName: 'addresses', underscored: true, paranoid: true }
   );
 
   Address.associate = (models) => {

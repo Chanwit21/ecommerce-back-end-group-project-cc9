@@ -1,10 +1,22 @@
-const { User, Cart, CreditCard } = require('../models');
+const { User, Cart, CreditCard, ResetPassword } = require('../models');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { isEmail, isStrongPassword } = require('validator');
 const omise = require('omise')({ secretKey: 'skey_test_5ov8h8rdpslf54x97k1' });
 const Customerror = require('../util/error');
 const cloundinaryUploadPromise = require('../util/upload');
+const { cryptotypePromise } = require('../util/cryptotype');
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.auth_user,
+    pass: process.env.auth_pass,
+  },
+});
 
 const createCartAndCreditCardOmise = async (userCreate) => {
   // Create Cart when user registed
@@ -51,7 +63,7 @@ exports.register = async (req, res, next) => {
 
   try {
     const user = await User.findOne({
-      where: { email: email, facebookId: null, facebookId: null },
+      where: { email: email, facebookId: null, googleId: null },
     });
 
     if (user) {
@@ -227,31 +239,32 @@ exports.loginWithFacebook = async (req, res, next) => {
 
 exports.editUserInformation = async (req, res, next) => {
   try {
-    const { firstName, lastName, email, phoneNumber } = req.body
-    const result = req.file && await cloundinaryUploadPromise(req.file.path)
-    const rows = await User.update({
-      firstName,
-      lastName,
-      email,
-      phoneNumber,
-      imageUrl: result?.secure_url
-    },
+    const { firstName, lastName, email, phoneNumber } = req.body;
+    const result = req.file && (await cloundinaryUploadPromise(req.file.path));
+    const rows = await User.update(
+      {
+        firstName,
+        lastName,
+        email,
+        phoneNumber,
+        imageUrl: result?.secure_url,
+      },
       {
         where: {
-          id: req.user.id
-        }
-      })
+          id: req.user.id,
+        },
+      }
+    );
 
     if (rows === 0) {
       return res.status(400).json({ message: 'Update is failed' });
     }
 
     res.json({ message: 'Updated is Successful' });
+  } catch (err) {
+    next(err);
   }
-  catch (err) {
-    next(err)
-  }
-}
+};
 
 exports.getUserById = async (req, res, next) => {
   try {
@@ -260,11 +273,82 @@ exports.getUserById = async (req, res, next) => {
       where: {
         id,
       },
-      attributes: ['firstName', 'lastName', 'email', 'imageUrl', 'phoneNumber', 'gender', 'id']
+      attributes: ['firstName', 'lastName', 'email', 'imageUrl', 'phoneNumber', 'gender', 'id'],
     });
 
     res.json({ user });
   } catch (err) {
     next(err);
   }
-}
+};
+
+exports.forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ where: { email: email, googleId: null, facebookId: null } });
+
+    if (!user) {
+      return res.status(400).json({ message: "User don't exist with that email!!" });
+    }
+
+    const resetPassword = await ResetPassword.findOne({ where: { userId: user.id } });
+
+    const resetToken = await cryptotypePromise();
+    const expireToken = Date.now() + 20 * 60 * 1000;
+
+    if (resetPassword) {
+      resetPassword.resetToken = resetToken;
+      resetPassword.expireToken = expireToken;
+      resetPassword.save();
+    } else {
+      await ResetPassword.create({ userId: user.id, resetToken, expireToken });
+    }
+
+    let info = await transporter.sendMail({
+      from: process.env.auth_user,
+      to: email,
+      subject: 'Reset Password',
+      text: `${process.env.CLIENT_URL}/reset_password/${resetToken}`,
+    });
+    console.log(info);
+
+    res.json({ message: 'Send reset password url to email.' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.resetPassword = async (req, res, next) => {
+  try {
+    const { newPassword, confirmNewPassword, resetToken } = req.body;
+    const resetPassword = await ResetPassword.findOne({ where: { resetToken: resetToken } });
+
+    if (newPassword !== confirmNewPassword) {
+      return res.status(400).json({ message: "Passwor dosen't match!!" });
+    }
+
+    if (!resetPassword) {
+      return res.status(400).json({ message: "Token is don't have in table" });
+    }
+
+    const now = Date.now();
+
+    if (now > resetPassword.expireToken) {
+      return res.status(400).json({ message: 'Token is expire!!' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    await User.update(
+      {
+        password: hashedPassword,
+      },
+      { where: { id: resetPassword.userId } }
+    );
+
+    await ResetPassword.destroy({ where: { resetToken: resetToken } });
+
+    res.json({ message: 'Update password successful!!' });
+  } catch (err) {
+    next(err);
+  }
+};
