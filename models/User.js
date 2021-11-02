@@ -1,4 +1,4 @@
-const { Sequelize, STRING } = require('sequelize');
+const { Sequelize } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define(
@@ -71,6 +71,13 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: {
         name: 'userId',
         allowNull: false,
+      },
+      onDelete: 'RESTRICT',
+      onUpdate: 'RESTRICT',
+    });
+    User.hasOne(models.ResetPassword, {
+      foreignKey: {
+        name: 'userId',
       },
       onDelete: 'RESTRICT',
       onUpdate: 'RESTRICT',

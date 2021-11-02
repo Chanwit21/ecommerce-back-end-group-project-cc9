@@ -232,7 +232,7 @@ exports.getAllOrder = async (req, res, next) => {
 
     const getAllOrder = await Order.findAll({
       order: [['omiseCreatedAt', 'DESC']],
-      include: { model: Address, include: { model: User } },
+      include: { paranoid: false, model: Address, include: { model: User } },
       where: {
         '$Address.User.id$': req.user.role === 'CUSTOMER' ? req.user.id : { [Op.or]: [] },
       },
@@ -290,6 +290,7 @@ exports.getOrderItemById = async (req, res, next) => {
           model: Order,
           attributes: ['shippingTrackingId', 'cardId', 'shippingStatus'],
           include: {
+            paranoid: false,
             model: Address,
             include: {
               model: User,
