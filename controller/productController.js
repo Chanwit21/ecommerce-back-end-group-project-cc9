@@ -208,6 +208,7 @@ exports.getProductAll = async (req, res, next) => {
     });
 
     const objCondition = {
+      order: [['createdAt', 'DESC']],
       where: { [Op.or]: arrayObjectToQuery },
       limit: 7,
       offset: +offset,
@@ -404,7 +405,7 @@ exports.getAllProductByCategory = async (req, res, next) => {
       }
 
       const objCount = {
-        order: ['createdAt', 'DESC'],
+        order: [['createdAt', 'DESC']],
         where: {
           [Op.or]: arrayObjectToQuery,
         },
@@ -413,7 +414,7 @@ exports.getAllProductByCategory = async (req, res, next) => {
       };
 
       const objNormal = {
-        order: ['createdAt', 'DESC'],
+        order: [['createdAt', 'DESC']],
         where: {
           [Op.or]: arrayObjectToQuery,
         },
@@ -456,13 +457,13 @@ exports.getAllProductByCategory = async (req, res, next) => {
     }
 
     const count = await Product.findAll({
-      order: ['createdAt', 'DESC'],
+      order: [['createdAt', 'DESC']],
       where: objWhere,
       group: ['name'],
       attributes: [[Sequelize.fn('COUNT', Sequelize.col('*')), 'count']],
     });
     const result = await Product.findAll({
-      order: ['createdAt', 'DESC'],
+      order: [['createdAt', 'DESC']],
       where: objWhere,
       group: ['name'],
       include: { model: ProductImage, attributes: ['imageUrl'] },
