@@ -526,9 +526,8 @@ exports.getAllFavoriteProduct = async (req, res, next) => {
 
 exports.getFeatureProduct = async (req, res, next) => {
   try {
-    const query =
-      "SELECT p.name AS name,p.id AS id, p.price AS price, pi.image_url AS imageUrl FROM `products` p LEFT JOIN `product_images` pi ON pi.product_id = p.id ORDER BY p.created_at DESC LIMIT 3;";
-    const [featureProduct] = await sequelize.query(query);
+    const products = await Product.findAll({include:[ProductImage],order:[['createdAt','DESC']],limit:3});
+    const featureProduct=products.map(product=>({id:product.id,name:product.name,price:product.price,imageUrl:product.ProductImages?.[0]?.imageUrl||null}));
     res.status(200).json({ featureProduct });
   } catch (err) {
     next(err);
@@ -537,8 +536,8 @@ exports.getFeatureProduct = async (req, res, next) => {
 
 exports.getBestSellerProduct = async (req, res, next) => {
   try {
-    const query =
-      "SELECT SUM(oi.quality*p.price),p.id AS id,p.name AS name,pi.image_url AS imageUrl,p.price AS price FROM `order_items` oi LEFT JOIN `products` p ON oi.product_id = p.id LEFT JOIN `product_images` pi ON pi.product_id = p.id  GROUP BY p.id ORDER BY SUM(oi.quality*p.price) DESC LIMIT 3";
+    const quote=sequelize.getQueryInterface().queryGenerator.quoteTable.bind(sequelize.getQueryInterface().queryGenerator);
+    const query=`SELECT p.id,p.name,p.price,MIN(pi.image_url) AS "imageUrl" FROM ${quote(OrderItem.getTableName())} oi JOIN ${quote(Product.getTableName())} p ON oi.product_id=p.id LEFT JOIN ${quote(ProductImage.getTableName())} pi ON pi.product_id=p.id GROUP BY p.id,p.name,p.price ORDER BY SUM(oi.quality*p.price) DESC LIMIT 3`;
     const [bestSellerProduct] = await sequelize.query(query);
     res.status(200).json({ bestSellerProduct });
   } catch (err) {

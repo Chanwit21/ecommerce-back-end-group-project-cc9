@@ -6,23 +6,10 @@ const Sequelize = require("sequelize");
 const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || "development";
 const db = {};
-const sequelize =
-  process.env.DB_DIALECT === "mysql"
-    ? new Sequelize(
-        process.env.DB_NAME,
-        process.env.DB_USER,
-        process.env.DB_PASSWORD,
-        {
-          host: process.env.DB_HOST || "localhost",
-          dialect: "mysql",
-          logging: false,
-        },
-      )
-    : new Sequelize({
-        dialect: "sqlite",
-        storage: process.env.DB_STORAGE || "./data/ecommerce.sqlite",
-        logging: false,
-      });
+const schema = process.env.DB_SCHEMA || 'ecommerce';
+if (!/^[a-z_][a-z0-9_]*$/.test(schema)) throw new Error('Invalid DB_SCHEMA');
+if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required');
+const sequelize = new Sequelize(process.env.DATABASE_URL, {dialect:'postgres',logging:false,define:{schema},pool:{max:10,min:0},dialectOptions:{application_name:'ecommerce'}});
 
 fs.readdirSync(__dirname)
   .filter((file) => {

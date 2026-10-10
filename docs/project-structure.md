@@ -4,17 +4,17 @@ Frontend: Next.js 16 / React 19 on http://127.0.0.1:3200. Backend: NestJS 11 / S
 
 ## Run
 
-Node.js 22+ and npm are required.
+Node.js 24+ and npm are required.
 
 ```sh
 npm run install:all
 # Copy backend/.env.example to backend/.env and set SECRET_KEY.
 # Copy frontend/.env.example to frontend/.env.local and set SESSION_SECRET (32+ random characters).
-npm run db:seed
+ALLOW_DEMO_SEED=true npm run db:seed
 npm run dev
 ```
 
-This checkout already has ignored local secrets and seeded SQLite. `npm run build` builds both apps. `npm run test:smoke` checks both running servers. Production: build, then npm start in each repository; use HTTPS for Secure cookies. MySQL configuration is optional; production schemas are never auto-synced. Seed runs only on local SQLite without dropping data.
+This checkout already has ignored local secrets and PostgreSQL. `npm run build` builds both apps. `npm run test:smoke` checks both running servers. Production: build, then npm start in each repository; use HTTPS for Secure cookies. PostgreSQL DATABASE_URL and DB_SCHEMA are required; production schemas are never auto-synced. Demo seed requires ALLOW_DEMO_SEED=true and does not drop data.
 
 ## Demo accounts
 

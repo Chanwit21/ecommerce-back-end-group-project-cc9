@@ -4,8 +4,7 @@ fs.mkdirSync("data", { recursive: true });
 const db = require("../src/database/models");
 const bcrypt = require("bcryptjs");
 (async () => {
-  if (process.env.DB_DIALECT && process.env.DB_DIALECT !== "sqlite")
-    throw Error("Demo seed is SQLite-only");
+  if (process.env.ALLOW_DEMO_SEED !== "true") throw Error("Set ALLOW_DEMO_SEED=true to seed synthetic demo data");
   await db.sequelize.sync();
   for (const [email, role, name] of [
     ["admin@ecommerce.local", "ADMIN", "Admin"],
